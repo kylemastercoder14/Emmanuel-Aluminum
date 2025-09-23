@@ -26,6 +26,20 @@ export const useAdmin = async () => {
       where: {
         id: staffId,
       },
+      include: {
+        conversation: {
+          include: {
+            user: true,
+            messages: {
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+            },
+          },
+        },
+        message: true,
+      },
     });
 
     if (!staff) {

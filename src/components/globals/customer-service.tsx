@@ -1,15 +1,19 @@
-"use client";
+import React from "react";
+import ChatMain from "./chat-main";
+import { useUser } from "@/hooks/use-user";
 
-import React from 'react'
-import { Button } from '@/components/ui/button';
-import { IconMessage } from '@tabler/icons-react';
+const CustomerService = async () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { userId, user } = await useUser();
 
-const CustomerService = () => {
+  // pick first conversation if exists, otherwise null
+  const conversationId = user?.conversation?.[0]?.id ?? null;
   return (
-	<Button type="button" size="icon" className='fixed p-5 bottom-5 right-5 rounded-full'>
-	  <IconMessage className='size-6' />
-	</Button>
-  )
-}
+    <ChatMain
+      userId={userId as string}
+      conversationId={conversationId}
+    />
+  );
+};
 
-export default CustomerService
+export default CustomerService;

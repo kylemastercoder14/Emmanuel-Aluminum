@@ -40,7 +40,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className='z-[150]'>
         <AlertDialogHeader>
           <AlertDialogTitle>
             {title || "Are you absolutely sure?"}

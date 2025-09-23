@@ -14,9 +14,29 @@ model User {
   phoneNumber     String
   password        String
   otpCode         String?
+  image           String?
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  orders        Orders[]
+  address       Address[]
+  notifications Notifications[]
+  message       Message[]
+  conversation  Conversation[]
+  report        Report[]
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  fullName    String
+  phoneNumber String
+  address     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Staff {
@@ -31,6 +51,9 @@ model Staff {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  message      Message[]
+  conversation Conversation[]
 }
 
 model Supplier {
@@ -75,7 +98,8 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  materials Material[]
+  materials  Material[]
+  orderItems OrderItems[]
 }
 
 model Task {
@@ -87,4 +111,131 @@ model Task {
   endDate   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Orders {
+  id            String @id @default(uuid())
+  orderId       String @unique
+  status        String @default("Pending")
+  totalAmount   Float
+  paymentMethod String
+
+  scheduledDate String?
+  scheduledTime String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  dateCancelled DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderItems OrderItems[]
+}
+
+model OrderItems {
+  id        String @id @default(uuid())
+  quantity  String
+  color     String
+  unitPrice String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderId String
+  orders  Orders @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Notifications {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  imageUrl  String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // User sender/receiver (nullable if staff is the sender)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Staff sender/receiver (nullable if user is the sender)
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  // Every message belongs to a conversation
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  // One user per conversation
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // One staff/admin per conversation (optional – assigned once staff replies)
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+  report   Report[]
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  type        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Reported by a user
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Related to a conversation (optional)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Quotation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName     String
+  lastName      String
+  contactNumber String
+  email         String
+
+  serviceType   String
+  size          String // e.g. "48 x 72"
+  unit          Unit // inch, cm, ft
+  color         String?
+  variants      String? // e.g. frosted, tinted, powder-coated
+  description   String?
+  preferredDate DateTime
+  status String @default("PENDING")
+  note String?
+}
+
+enum Unit {
+  INCH
+  CM
+  FT
 }

@@ -3,6 +3,8 @@
 import z from "zod";
 import db from "@/lib/db";
 import { userSchema } from "@/validators/user";
+import { quotationSchema } from "@/validators/quotation";
+import { sendQuotationToEmail } from "@/hooks/use-email-template";
 
 export const deleteUser = async (id: string) => {
   try {
@@ -107,5 +109,160 @@ export const updateUserStatus = async (id: string, isActive: boolean) => {
           ? (error as { message: string }).message
           : "Failed to update user status",
     };
+  }
+};
+
+export const addOrUpdateAddress = async (
+  userId: string,
+  address: {
+    fullName: string;
+    phoneNumber: string;
+    address: string;
+  }
+) => {
+  try {
+    // check if user already has address
+    const existingAddress = await db.address.findFirst({
+      where: { userId },
+    });
+
+    if (existingAddress) {
+      // update
+      await db.address.update({
+        where: { id: existingAddress.id },
+        data: {
+          fullName: address.fullName,
+          phoneNumber: address.phoneNumber,
+          address: address.address,
+        },
+      });
+    } else {
+      // create
+      await db.address.create({
+        data: {
+          fullName: address.fullName,
+          phoneNumber: address.phoneNumber,
+          address: address.address,
+          userId,
+        },
+      });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Something went wrong!" };
+  }
+};
+
+export const submitReport = async (
+  values: {
+    type: string;
+    description?: string;
+  },
+  userId: string,
+  conversationId: string
+) => {
+  try {
+    await db.report.create({
+      data: {
+        type: values.type,
+        description: values.description,
+        userId,
+        conversationId,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Something went wrong!" };
+  }
+};
+
+export const submitQuotation = async (
+  data: z.infer<typeof quotationSchema>
+) => {
+  try {
+    const validatedFields = quotationSchema.parse(data);
+
+    const quotation = await db.quotation.create({
+      data: {
+        firstName: validatedFields.firstName,
+        lastName: validatedFields.lastName,
+        contactNumber: validatedFields.contactNumber,
+        email: validatedFields.email,
+        serviceType: validatedFields.serviceType,
+        size: validatedFields.size,
+        unit: validatedFields.unit,
+        color: validatedFields.color || null,
+        variants: validatedFields.variants || null,
+        description: validatedFields.description || null,
+        preferredDate: new Date(
+          `${validatedFields.preferredDate}T${validatedFields.preferredTime}`
+        ),
+      },
+    });
+
+    await sendQuotationToEmail(
+      quotation.email,
+      quotation.firstName,
+      quotation.lastName,
+      quotation.serviceType,
+      quotation.size,
+      quotation.unit,
+      "PENDING"
+    );
+
+    return { success: true, data: quotation };
+  } catch (error) {
+    console.error("Error submitting quotation:", error);
+    return { success: false, error: "Failed to submit quotation." };
+  }
+};
+
+export const deleteQuotation = async (id: string) => {
+  try {
+    await db.quotation.delete({
+      where: { id },
+    });
+
+    return { success: "Quotation deleted successfully" };
+  } catch (error) {
+    console.error(error);
+    return {
+      error:
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : "Failed to delete quotation",
+    };
+  }
+};
+
+export const updateQuotationStatus = async (
+  id: string,
+  status: "PENDING" | "APPROVED" | "REJECTED",
+  note?: string
+) => {
+  try {
+    const quotation = await db.quotation.update({
+      where: { id },
+      data: { status, note },
+    });
+
+    await sendQuotationToEmail(
+      quotation.email,
+      quotation.firstName,
+      quotation.lastName,
+      quotation.serviceType,
+      quotation.size,
+      quotation.unit,
+      status
+    );
+
+    return { success: `Quotation has been ${quotation.status.toLowerCase()}.` };
+  } catch (error) {
+    console.error("Status update error:", error);
+    return { error: "Failed to update quotation status." };
   }
 };

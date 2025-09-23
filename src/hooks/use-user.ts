@@ -1,19 +1,30 @@
 import db from "@/lib/db";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { UserWithProps } from "@/types/interface";
 
-// Since this is running in a server component, we should treat it as a utility, not a hook
-export const useUser = async () => {
+export const useUser = async (): Promise<{
+  user: UserWithProps | null;
+  userId: string | null;
+  authToken: string | null;
+  error?: string;
+}> => {
   const cookieStore = await cookies();
   const authToken = cookieStore.get("Authorization");
 
   if (!authToken) {
-    return { error: "Authorization token is missing" };
+    return {
+      user: null,
+      userId: null,
+      authToken: null,
+      error: "Authorization token is missing",
+    };
   }
 
   try {
     const token = authToken.value;
-    // Verify JWT token using the secret
+
+    // Verify JWT token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as {
       sub: string;
       exp: number;
@@ -23,18 +34,27 @@ export const useUser = async () => {
 
     // Fetch user from database
     const user = await db.user.findFirst({
-      where: {
-        id: userId,
+      where: { id: userId },
+      include: {
+        address: true,
+        orders: true,
+        notifications: true,
+        conversation: true,
       },
     });
 
     if (!user) {
-      return { error: "User not found" };
+      return { user: null, userId, authToken: token, error: "User not found" };
     }
 
-    return { user, userId, authToken };
+    return { user, userId, authToken: token };
   } catch (error) {
     console.error(error);
-    return { error: "Invalid or expired token" };
+    return {
+      user: null,
+      userId: null,
+      authToken: null,
+      error: "Invalid or expired token",
+    };
   }
 };

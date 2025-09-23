@@ -13,16 +13,19 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[];
+  selectedForCheckout: CartItem[];
   addItem: (data: CartItem) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string, color: string) => void;
+  updateQuantity: (id: string, color: string, quantity: number) => void;
   removeAll: () => void;
+  setSelectedForCheckout: (items: CartItem[]) => void;
 }
 
 const useCart = create(
   persist<CartStore>(
     (set, get) => ({
       items: [],
+      selectedForCheckout: [],
       addItem: (data: CartItem) => {
         const currentItems = get().items;
         const existingItem = currentItems.find(
@@ -43,21 +46,30 @@ const useCart = create(
           toast.success("Item added to cart");
         }
       },
-
-      removeItem: (id: string) => {
-        set({ items: get().items.filter((item) => item.id !== id) });
+      removeItem: (id: string, color: string) => {
+        set({
+          items: get().items.filter(
+            (item) => !(item.id === id && item.color === color)
+          ),
+        });
         toast.success("Item removed from cart");
       },
-      updateQuantity: (id: string, quantity: number) => {
+      updateQuantity: (id: string, color: string, quantity: number) => {
         set({
           items: get().items.map((item) =>
-            item.id === id ? { ...item, quantity } : item
+            item.id === id && item.color === color
+              ? { ...item, quantity }
+              : item
           ),
         });
         toast.success("Quantity updated");
       },
       removeAll: () => {
         set({ items: [] });
+        toast.success("All items removed from cart");
+      },
+      setSelectedForCheckout: (checkoutItems: CartItem[]) => {
+        set({ selectedForCheckout: checkoutItems });
       },
     }),
     {

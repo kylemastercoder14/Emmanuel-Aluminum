@@ -1,5 +1,10 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import {
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+} from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,3 +52,17 @@ export const formatDateTimeLocal = (selectedDate: Date) => {
 
   return localISOTime;
 };
+
+export function formatCompactTime(date: Date): string {
+  const now = new Date();
+  const diffInMinutes = differenceInMinutes(now, date);
+
+  if (diffInMinutes < 1) return "just now";
+  if (diffInMinutes < 60) return `${diffInMinutes}m`;
+
+  const diffInHours = differenceInHours(now, date);
+  if (diffInHours < 24) return `${diffInHours}h`;
+
+  const diffInDays = differenceInDays(now, date);
+  return `${diffInDays}d`;
+}

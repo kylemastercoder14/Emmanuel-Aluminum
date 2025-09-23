@@ -1,21 +1,38 @@
-import Image from "next/image";
 import React from "react";
+import db from "@/lib/db";
+import Heading from "@/components/globals/heading";
+import { DataTable } from "@/components/globals/data-table";
+import { columns } from "./_components/columns";
 
-const Page = () => {
+const Page = async () => {
+  const data = await db.orders.findMany({
+	where: {
+		status: "Cancelled"
+	},
+	orderBy: {
+	  createdAt: "asc",
+	},
+	include: {
+	  user: true,
+	  orderItems: {
+		include: {
+		  service: true,
+		},
+	  },
+	},
+  });
+
   return (
-	<div className="flex items-center justify-center flex-col min-h-screen">
-	  <Image
-		src="/under-construction.svg"
-		alt="Under Construction"
-		width={600}
-		height={600}
-	  />
-	  <h3 className="text-2xl font-bold mt-3">
-		This page is under construction
-	  </h3>
-	  <p className="text-muted-foreground mt-2">
-		We&apos;re working hard to bring you this page. Stay tuned!
-	  </p>
+	<div>
+	  <div className="flex items-center justify-between">
+		<Heading
+		  title="Service Cancellation"
+		  description="View and manage service cancellation for your system."
+		/>
+	  </div>
+	  <div className="mt-5">
+		<DataTable columns={columns} data={data} />
+	  </div>
 	</div>
   );
 };

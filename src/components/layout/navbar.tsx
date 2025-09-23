@@ -3,7 +3,8 @@ import Link from "next/link";
 import React from "react";
 import Logo from "@/components/globals/logo";
 import { useUser } from "@/hooks/use-user";
-import { ShoppingCart, User } from 'lucide-react';
+import { Bell, User } from "lucide-react";
+import CartHeader from "@/components/globals/cart-header";
 
 const Navbar = async () => {
   const { user } = await useUser();
@@ -39,20 +40,22 @@ const Navbar = async () => {
           About Us
         </Link>
         {user ? (
-          <div className='flex items-center space-x-7'>
+          <div className="flex items-center space-x-7">
             <Link
-              href="/cart"
-              className="text-white hover:text-gray-200 mt-0.5 font-medium transition-colors"
+              href="/notifications"
+              className="text-white hover:text-gray-200 mt-0.5 relative font-medium transition-colors"
             >
-
-              <ShoppingCart className='size-5' />
+              <Bell className="size-6" />
+              <div className="absolute -top-1 -right-2 bg-red-600 flex items-center justify-center size-4 rounded-full font-bold text-[8px]">
+                {user.notifications.filter((n) => !n.isRead).length}
+              </div>
             </Link>
+            <CartHeader />
             <Link
               href="/profile"
               className="text-white hover:text-gray-200 mt-0.5 font-medium transition-colors"
             >
-
-              <User className='size-5' />
+              <User className="size-5" />
             </Link>
           </div>
         ) : (

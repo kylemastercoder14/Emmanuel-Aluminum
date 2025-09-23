@@ -32,7 +32,12 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
     );
 
     if (existingItem) {
-      updateQuantity(existingItem.id, existingItem.quantity + quantity);
+      // increment by the selected quantity
+      updateQuantity(
+        existingItem.id,
+        existingItem.color,
+        existingItem.quantity + quantity
+      );
     } else {
       addItem({
         id: data.id,
@@ -89,7 +94,9 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
         {/* Right side - Product details */}
         <div className="lg:col-span-3 space-y-6">
           <h2 className="text-2xl font-bold">{data?.name}</h2>
-          <p className="text-lg font-semibold text-gray-600">{data?.category}</p>
+          <p className="text-lg font-semibold text-gray-600">
+            {data?.category}
+          </p>
 
           {/* Frame Colors */}
           <div>
@@ -148,7 +155,7 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
               onClick={handleAddToCart}
               className="bg-green-600 cursor-pointer text-white px-5 py-2 rounded hover:bg-green-700"
             >
-              Add to Cart
+              Request Service
             </button>
           </div>
 

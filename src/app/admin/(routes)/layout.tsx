@@ -4,6 +4,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { useAdmin } from "@/hooks/use-admin";
 import { redirect } from "next/navigation";
+import ChatSupport from "./chat-support";
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const { staff } = await useAdmin();
@@ -21,8 +22,12 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <main className="p-5">{children}</main>
+        <main className="p-5">
+          {children}
+
+        </main>
       </SidebarInset>
+      <ChatSupport />
     </SidebarProvider>
   );
 };
