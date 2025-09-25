@@ -15,13 +15,13 @@ export const sendAccountToEmail = async (
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "kylemastercoder14@gmail.com",
-      pass: "nrihffkvfsgfhnbn",
+      user: "aluminumfabricationemmanuel@gmail.com",
+      pass: "hkzmfkrdxbuytzum",
     },
   });
 
   const message = {
-    from: "kylemastercoder14@gmail.com",
+    from: "aluminumfabricationemmanuel@gmail.com",
     to: email,
     subject: "This is your account details",
     text: `Hello ${name}, your account has been created. Here is your OTP: ${otpCode}`,
@@ -61,8 +61,8 @@ export const sendQuotationToEmail = async (
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "kylemastercoder14@gmail.com", // your Gmail
-      pass: "nrihffkvfsgfhnbn", // Gmail App Password
+      user: "aluminumfabricationemmanuel@gmail.com", // your Gmail
+      pass: "hkzmfkrdxbuytzum", // Gmail App Password
     },
   });
 
@@ -80,7 +80,7 @@ export const sendQuotationToEmail = async (
         }`;
 
   const message = {
-    from: "kylemastercoder14@gmail.com",
+    from: "aluminumfabricationemmanuel@gmail.com",
     to: email,
     subject: subjectMap[status],
     text: textMessage,
