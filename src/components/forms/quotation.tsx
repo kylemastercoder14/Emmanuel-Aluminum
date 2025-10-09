@@ -275,7 +275,7 @@ const QuotationForm = () => {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
           Submit Quotation
         </Button>
       </form>

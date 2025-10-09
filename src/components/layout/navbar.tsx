@@ -3,8 +3,11 @@ import Link from "next/link";
 import React from "react";
 import Logo from "@/components/globals/logo";
 import { useUser } from "@/hooks/use-user";
-import { Bell, User } from "lucide-react";
+import { Bell } from "lucide-react";
 import CartHeader from "@/components/globals/cart-header";
+import LogoutButton from '@/components/globals/logout-button';
+import OrderHeader from '@/components/globals/order-header';
+
 
 const Navbar = async () => {
   const { user } = await useUser();
@@ -51,12 +54,8 @@ const Navbar = async () => {
               </div>
             </Link>
             <CartHeader />
-            <Link
-              href="/profile"
-              className="text-white hover:text-gray-200 mt-0.5 font-medium transition-colors"
-            >
-              <User className="size-5" />
-            </Link>
+            <OrderHeader />
+            <LogoutButton />
           </div>
         ) : (
           <Link

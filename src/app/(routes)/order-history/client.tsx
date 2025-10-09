@@ -6,9 +6,33 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { OrderWithOrderItems } from "@/types/interface";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
   const router = useRouter();
+
+  const handleCancelOrder = async (orderId: string) => {
+    const confirmCancel = confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirmCancel) return;
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: "PATCH",
+      });
+
+      if (res.ok) {
+        toast.success("Order has been successfully cancelled.");
+        router.refresh(); // Refresh the page to update the status
+      } else {
+        toast.error("Failed to cancel the order. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while cancelling the order.");
+    }
+  };
 
   return (
     <div className="p-10 px-20 mt-20 mb-20 min-h-screen bg-gray-50">
@@ -16,7 +40,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
 
       {/* Header */}
       <div className="grid grid-cols-8 font-semibold border-b pb-2 text-gray-700">
-        <span className='col-span-2'>Order No.</span>
+        <span className="col-span-2">Order No.</span>
         <span className="col-span-2">Products / Services</span>
         <span>Total Amount</span>
         <span>Payment Method</span>
@@ -36,7 +60,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
             className="grid grid-cols-8 items-start border-b py-4"
           >
             {/* Order No. */}
-            <span className='col-span-2'>{order.orderId}</span>
+            <span className="col-span-2">{order.orderId}</span>
 
             {/* Products / Services */}
             <div className="col-span-2 space-y-3">
@@ -68,21 +92,41 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
 
             {/* Status */}
             <Badge
-              variant={order.status === "Completed" ? "success" : "default"}
+              className={
+                order.status === "Completed"
+                  ? "bg-green-100 text-green-800"
+                  : order.status === "Scheduled"
+                    ? "bg-blue-100 text-blue-800"
+                    : order.status === "Pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : order.status === "Cancelled"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+              }
             >
               {order.status}
             </Badge>
 
             {/* Actions */}
-            <div className="text-right">
+            <div className="text-right flex justify-end gap-2">
               <Button
                 size="sm"
                 variant="ghost"
-				className='bg-green-600 hover:bg-green-700 text-white'
+                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => router.push(`/order-history/${order.orderId}`)}
               >
                 View Details
               </Button>
+              {order.status === "Pending" && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => handleCancelOrder(order.id)}
+                >
+                  Cancel Order
+                </Button>
+              )}
             </div>
           </div>
         ))

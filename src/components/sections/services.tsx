@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 const Services = () => {
   const router = useRouter();
   return (
-    <div className="mt-10 pb-20 px-30">
+    <div id='services' className="mt-10 pb-20 px-30">
       <div className="flex flex-col items-start justify-center">
         <h3 className="text-4xl font-bold tracking-tight">
           Choose our services

@@ -13,6 +13,13 @@ const Footer = () => {
             </div>
             <div className="flex items-center gap-2">
               <Link
+                href="/service-guidelines"
+                className="text-gray-100 hover:underline"
+              >
+                Service Guidelines
+              </Link>
+              <span className="text-gray-400">|</span>
+              <Link
                 href="/privacy-policy"
                 className="text-gray-100 hover:underline"
               >
@@ -25,7 +32,7 @@ const Footer = () => {
               >
                 Terms of Service
               </Link>
-			  <span className="text-gray-400">|</span>
+              <span className="text-gray-400">|</span>
               <Link
                 href="/intellectual-property"
                 className="text-gray-100 hover:underline"
