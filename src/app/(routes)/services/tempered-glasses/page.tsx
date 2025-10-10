@@ -23,7 +23,7 @@ const Page = async () => {
 		{data.length > 0 ? (
 		  data.map((service) => (
 			<Link
-			  href={`/services/tempered-glassses/${service.id}`}
+			  href={`/services/tempered-glasses/${service.id}`}
 			  key={service.id}
 			  className="w-full h-[500px]"
 			>
