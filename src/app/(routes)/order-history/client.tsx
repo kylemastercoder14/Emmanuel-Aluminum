@@ -24,7 +24,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
 
       if (res.ok) {
         toast.success("Order has been successfully cancelled.");
-        router.refresh(); // Refresh the page to update the status
+        router.refresh();
       } else {
         toast.error("Failed to cancel the order. Please try again.");
       }
@@ -35,11 +35,11 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
   };
 
   return (
-    <div className="p-10 px-20 mt-20 mb-20 min-h-screen bg-gray-50">
+    <div className="p-6 md:p-10 mt-20 mb-20 min-h-screen bg-gray-50">
       <h1 className="text-2xl font-bold mb-6">Request Service History</h1>
 
-      {/* Header */}
-      <div className="grid grid-cols-8 font-semibold border-b pb-2 text-gray-700">
+      {/* Header (Desktop only) */}
+      <div className="hidden md:grid grid-cols-8 font-semibold border-b pb-2 text-gray-700">
         <span className="col-span-2">Order No.</span>
         <span className="col-span-2">Products / Services</span>
         <span>Total Amount</span>
@@ -48,7 +48,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
         <span className="text-right">Actions</span>
       </div>
 
-      {/* Items */}
+      {/* Orders */}
       {orders.length === 0 ? (
         <div className="py-10 text-center text-gray-500">
           Your order history is empty
@@ -57,15 +57,18 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
         orders.map((order) => (
           <div
             key={order.id}
-            className="grid grid-cols-8 items-start border-b py-4"
+            className="flex flex-col md:grid md:grid-cols-8 gap-4 md:gap-0 items-start border-b py-4"
           >
             {/* Order No. */}
-            <span className="col-span-2">{order.orderId}</span>
+            <span className="font-medium md:col-span-2">{order.orderId}</span>
 
             {/* Products / Services */}
-            <div className="col-span-2 space-y-3">
+            <div className="flex flex-col md:col-span-2 space-y-3 w-full">
               {order.orderItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4">
+                <div
+                  key={item.id}
+                  className="flex items-start gap-4 flex-wrap md:flex-nowrap"
+                >
                   <Image
                     src={item.service.images[0]}
                     alt={item.service.name}
@@ -73,22 +76,26 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
                     height={80}
                     className="rounded border"
                   />
-                  <div>
+                  <div className="flex flex-col">
                     <p className="font-medium">{item.service.name}</p>
                     <p className="text-sm text-gray-500">
                       {item.color} • {item.quantity} pcs
                     </p>
-                    <p className="text-sm">₱{item.unitPrice}</p>
+                    <p className="text-sm">
+                      ₱{item.unitPrice.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Total Amount */}
-            <span>₱{order.totalAmount.toLocaleString()}</span>
+            <span className="md:text-base font-medium">
+              ₱{order.totalAmount.toLocaleString()}
+            </span>
 
             {/* Payment Method */}
-            <span>{order.paymentMethod}</span>
+            <span className="md:text-base">{order.paymentMethod}</span>
 
             {/* Status */}
             <Badge
@@ -108,7 +115,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
             </Badge>
 
             {/* Actions */}
-            <div className="text-right flex justify-end gap-2">
+            <div className="flex flex-col md:flex-row text-left md:text-right gap-2 md:justify-end">
               <Button
                 size="sm"
                 variant="ghost"

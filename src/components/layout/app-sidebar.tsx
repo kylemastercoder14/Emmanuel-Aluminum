@@ -22,7 +22,7 @@ import {
 import Logo from "@/components/globals/logo";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/actions/auth";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const data = {
   navMain: [

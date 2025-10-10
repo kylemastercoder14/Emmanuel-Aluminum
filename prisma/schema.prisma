@@ -116,7 +116,7 @@ model Task {
 model Orders {
   id            String @id @default(uuid())
   orderId       String @unique
-  status        String @default("Pending")
+  status        String @default("Pending") // Pending, Scheduled, Completed, Cancelled
   totalAmount   Float
   paymentMethod String
 

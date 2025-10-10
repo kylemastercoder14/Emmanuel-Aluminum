@@ -2,7 +2,7 @@ import { MailIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import Link from "next/link";
 
 const Page = () => (
-  <div className="min-h-screen flex items-center justify-center">
+  <div className="min-h-screen flex items-center lg:pt-0 pt-40 justify-center">
     <div className="text-center">
       <b className="text-muted-foreground uppercase font-semibold text-sm">
         Contact Us

@@ -9,7 +9,7 @@ const Page = async () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex lg:mt-5 mt-20 items-center justify-between">
         <Heading
           title="Projects Tracking"
           description="Track and manage projects for your system."

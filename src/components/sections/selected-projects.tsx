@@ -3,7 +3,7 @@ import { BentoGrid } from "@/components/globals/bento-grid";
 
 const SelectedProjects = () => {
   return (
-    <div className="flex items-center mb-20 pt-10 pb-10 w-full h-screen justify-center flex-col bg-[#2916161e]">
+    <div className="flex items-center lg:px-0 px-10 mb-20 pt-10 pb-10 w-full h-screen justify-center flex-col bg-[#2916161e]">
       <div className="flex flex-col items-center justify-center mb-5">
         <h3 className="text-4xl font-bold tracking-tight">
           Our Selected Projects

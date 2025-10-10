@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 const OrderDetails = ({ order }: { order: OrderWithOrderItems | null }) => {
   const router = useRouter();
   return (
-    <div className="min-h-screen mt-20 p-10 mb-20 px-20 bg-gray-50">
+    <div className="min-h-screen lg:pt-20 pt-30 lg:p-10 mb-20 lg:px-20 px-8 bg-gray-50">
       <div className="flex items-center gap-2 mb-6">
         <Button
           title="Go back"

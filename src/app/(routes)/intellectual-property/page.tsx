@@ -7,7 +7,7 @@ const Page = () => {
       <p className="text-muted-foreground mt-2">
         Date Updated: October 10, 2025
       </p>
-      <div className="max-w-7xl mx-auto mt-10 space-y-6">
+      <div className="max-w-7xl lg:px-0 px-8 mx-auto mt-10 space-y-6">
         <p>
           At <strong>Emmanuel Aluminum Fabrication</strong>, we respect and
           protect the intellectual property rights of our company, clients, and

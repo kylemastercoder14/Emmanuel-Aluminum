@@ -37,10 +37,9 @@ const Page = () => {
         clipPath: "polygon(0 0, 75% 0, 30% 100%, 0 100%)",
         x: "0%",
         onComplete: () => {
-          gsap.set(sectionEl, { zIndex: 0 }); // drop z-index after animation
+          gsap.set(sectionEl, { zIndex: 0 });
         },
       })
-      // Staggered fade-in for text
       .to(
         q("h1, p"),
         {
@@ -50,38 +49,44 @@ const Page = () => {
           stagger: 0.2,
           ease: "power3.out",
         },
-        "-=0.5" // overlap with bg animation
+        "-=0.5"
       );
   }, []);
 
   return (
-    <div className="relative h-screen px-8 overflow-hidden">
-      {/* Dark Diagonal Section */}
-      <div ref={sectionRef} className="absolute inset-0 bg-navbar">
+    <div className="relative min-h-screen flex flex-col md:flex-row overflow-hidden">
+      {/* Dark Diagonal Section - hidden on small screens */}
+      <div
+        ref={sectionRef}
+        className="hidden md:flex relative md:absolute md:inset-0 w-1/2 bg-navbar items-center justify-center"
+      >
         <div
           ref={textRef}
-          className="h-full flex flex-col items-start justify-center pl-30"
+          className="h-full flex flex-col justify-center items-start px-6 md:pl-20 text-left"
         >
-          <h1 className="text-white text-5xl md:text-6xl lg:text-7xl font-medium font-serif tracking-wider">
+          <h1 className="text-white text-6xl lg:text-7xl font-medium font-serif tracking-wider">
             Hello there
           </h1>
-          <p className="text-white text-2xl mt-3">
+          <p className="text-white text-2xl mt-3 max-w-md">
             Kindly fill out the information required to proceed.
           </p>
         </div>
       </div>
 
-      {/* Form Section */}
-      <div className="absolute inset-0 flex items-center justify-end pr-30">
-        <div className="p-8 max-w-lg w-full">
-          <h2 className="text-3xl tracking-wider font-medium text-black font-serif mb-4 text-center">
+      {/* Form Section - full width on small screens, centered */}
+      <div className="flex-1 flex items-center justify-center px-6 md:absolute md:inset-0 md:w-1/2">
+        <div className="p-6 sm:p-8 max-w-md w-full bg-white rounded-md shadow-lg">
+          <h2 className="text-2xl sm:text-3xl tracking-wider font-medium text-black font-serif mb-4 text-center">
             Sign up
           </h2>
-          <div className="bg-black w-14 h-[1px] mx-auto" />
+          <div className="bg-black w-14 h-[1px] mx-auto mb-6" />
           <SignUpForm />
-          <div className="flex mt-5 items-center justify-center gap-2">
+          <div className="flex mt-5 items-center justify-center gap-2 text-sm sm:text-base">
             <p>Already have an account?</p>
-            <Link href="/sign-in" className="font-medium">
+            <Link
+              href="/sign-in"
+              className="font-medium text-blue-600 hover:underline"
+            >
               Sign in
             </Link>
           </div>

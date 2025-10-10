@@ -7,7 +7,7 @@ const Page = () => {
       <p className="text-muted-foreground mt-2">
         Date Updated: October 10, 2025
       </p>
-      <div className="max-w-7xl mx-auto mt-10 space-y-10">
+      <div className="max-w-7xl lg:px-0 px-8 mx-auto mt-10 space-y-10">
         <section>
           <h2 className="text-2xl font-bold mb-3">Installation Work</h2>
           <p className="text-gray-700 leading-relaxed">

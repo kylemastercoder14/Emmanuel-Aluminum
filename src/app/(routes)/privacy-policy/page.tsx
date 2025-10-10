@@ -8,7 +8,7 @@ const Page = () => {
       <p className="text-muted-foreground mt-2">
         Date Updated: October 10, 2025
       </p>
-      <div className="max-w-7xl mx-auto mt-10 space-y-6">
+      <div className="max-w-7xl mx-auto lg:px-0 px-8 mt-10 space-y-6">
         <p>
           At <strong>Emmanuel Aluminum Fabrication</strong>, we value your trust
           and are committed to protecting your personal information. This

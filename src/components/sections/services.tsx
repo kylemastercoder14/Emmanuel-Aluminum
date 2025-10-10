@@ -13,12 +13,12 @@ import { useRouter } from 'next/navigation';
 const Services = () => {
   const router = useRouter();
   return (
-    <div id='services' className="mt-10 pb-20 px-30">
+    <div id='services' className="mt-10 pb-20 lg:px-30 px-6">
       <div className="flex flex-col items-start justify-center">
-        <h3 className="text-4xl font-bold tracking-tight">
+        <h3 className="lg:text-4xl text-3xl font-bold tracking-tight">
           Choose our services
         </h3>
-        <div className="bg-black w-30 mt-2 h-1 rounded-full" />
+        <div className="bg-black lg:w-30 w-20 mt-2 h-1 rounded-full" />
       </div>
       <div className="grid lg:grid-cols-4 grid-cols-1 gap-5 mt-10">
         {/* Windows */}

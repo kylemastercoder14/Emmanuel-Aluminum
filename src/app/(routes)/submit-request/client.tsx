@@ -38,25 +38,19 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const fullAddress = {
-      fullName: name,
-      phoneNumber: contactNumber,
-      address,
-    };
+    const fullAddress = { fullName: name, phoneNumber: contactNumber, address };
 
     try {
       const response = await addOrUpdateAddress(
         user?.id as string,
         fullAddress
       );
-
       if (response.error) {
         toast.error(response.error);
         return;
       }
-
       toast.success("Address saved successfully");
-      setIsOpen(false); // close modal
+      setIsOpen(false);
       router.refresh();
     } catch (e) {
       console.error(e);
@@ -78,12 +72,10 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
         selectedForCheckout,
         total
       );
-
       if (response.error) {
         toast.error(response.error);
         return;
       }
-
       router.push(`/order-history/${response.orderId}`);
       toast.success("Checkout successful!");
       removeAll();
@@ -139,7 +131,7 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
             </div>
             <Button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
               disabled={isLoading}
             >
               Submit
@@ -147,11 +139,19 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
           </form>
         </div>
       </Modal>
-      <div className="p-10 px-20 mt-20 mb-20 min-h-screen bg-gray-50">
-        <h1 className="text-2xl font-bold mb-6">🛒 Submit Service Request</h1>
+
+      <div className="px-4 sm:px-10 lg:py-10 py-30 min-h-screen bg-gray-50">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center sm:text-left">
+          🛒 Submit Service Request
+        </h1>
+
         <Separator className="my-4" />
-        <div className="flex mb-6 items-center justify-between">
-          <h1 className="text-xl font-semibold">Delivery Address</h1>
+
+        {/* Delivery Address */}
+        <div className="flex flex-col sm:flex-row justify-between mb-6 items-start sm:items-center">
+          <h2 className="text-xl font-semibold mb-2 sm:mb-0">
+            Delivery Address
+          </h2>
           <Button
             size="lg"
             variant="link"
@@ -161,18 +161,19 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
             {user?.address?.length ? "Change Address" : "Add Address"}
           </Button>
         </div>
+
         {user?.address?.length ? (
-          <div className="space-y-1">
+          <div className="space-y-1 mb-5">
             <p className="font-semibold">{user.address[0]?.fullName}</p>
             <p>{user.address[0]?.phoneNumber}</p>
             <p>{user.address[0]?.address}</p>
           </div>
         ) : (
-          <p className="text-gray-500">No address added yet</p>
+          <p className="text-gray-500 mb-5">No address added yet</p>
         )}
 
         {/* Header */}
-        <div className="grid grid-cols-5 mt-5 font-semibold border-b pb-2 text-gray-700">
+        <div className="hidden md:grid grid-cols-5 font-semibold border-b pb-2 text-gray-700">
           <span className="col-span-2">Product</span>
           <span>Unit Price</span>
           <span>Quantity</span>
@@ -181,19 +182,17 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
 
         {/* Items */}
         {selectedForCheckout.length === 0 ? (
-          <div className="py-10 text-center text-gray-500">
-            Please add cart item first.
-          </div>
+          <div className="py-10 text-gray-500">Please add cart item first.</div>
         ) : (
           selectedForCheckout.map((item) => {
             const key = `${item.id}-${item.color}`;
             return (
               <div
                 key={key}
-                className="grid grid-cols-5 items-center border-b py-4"
+                className="flex flex-col md:grid md:grid-cols-5 items-start border-b py-4 gap-4 md:gap-0"
               >
                 {/* Product */}
-                <div className="flex items-center gap-4 col-span-2">
+                <div className="flex items-start gap-4 col-span-2">
                   <Image
                     src={item.image}
                     alt={item.name}
@@ -202,19 +201,25 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
                     className="rounded border"
                   />
                   <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.color}</p>
+                    <p className="font-medium text-sm sm:text-base">
+                      {item.name}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                      {item.color}
+                    </p>
                   </div>
                 </div>
 
                 {/* Price */}
-                <span>₱{item.price.toLocaleString()}</span>
+                <span className="text-sm sm:text-base">
+                  ₱{item.price.toLocaleString()}
+                </span>
 
                 {/* Quantity */}
-                <span>{item.quantity}</span>
+                <span className="text-sm sm:text-base">{item.quantity}</span>
 
                 {/* Sub-total */}
-                <span className="text-right">
+                <span className="text-sm sm:text-base text-right">
                   ₱{(item.quantity * item.price).toLocaleString()}
                 </span>
               </div>
@@ -222,44 +227,45 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
           })
         )}
 
-        <div className="flex flex-col items-start justify-start w-[320px] mt-5 ml-auto space-y-4">
-          <div className="flex w-full items-center justify-between gap-2">
-            <p className="font-medium">Sub-total</p>
-            <p>₱{total.toLocaleString()}</p>
-          </div>
-          <div className="flex w-full items-center justify-between gap-2">
-            <p className="font-medium">VAT</p>
-            <p>₱0</p>
-          </div>
-          <div className="flex w-full items-center justify-between gap-2">
-            <p className="font-medium">Discounts</p>
-            <p>₱0</p>
-          </div>
-          <div className="flex w-full items-center justify-between gap-2">
-            <p className="font-medium">Total Amount</p>
-            <p>₱{total.toLocaleString()}</p>
+        {/* Summary */}
+        <div className="flex flex-col sm:flex-row justify-end mt-5 gap-4 sm:gap-10">
+          <div className="flex flex-col w-full sm:w-[320px] space-y-2">
+            <div className="flex justify-between">
+              <span>Sub-total</span>
+              <span>₱{total.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>VAT</span>
+              <span>₱0</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Discounts</span>
+              <span>₱0</span>
+            </div>
+            <div className="flex justify-between font-semibold text-lg">
+              <span>Total Amount</span>
+              <span>₱{total.toLocaleString()}</span>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
         {selectedForCheckout.length > 0 && (
-          <div className="flex justify-end border-t items-center mt-6 pt-4">
-            <div className="flex items-center gap-6">
-              <p className="font-medium">
-                Total ({selectedForCheckout.length} item
-                {selectedForCheckout.length > 1 ? "s" : ""}):{" "}
-                <span className="text-lg font-bold text-green-600">
-                  ₱{total.toLocaleString()}
-                </span>
-              </p>
-              <Button
-                onClick={handleCheckout}
-                disabled={isSubmitting || !user?.address?.length}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Submit Request
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row justify-end border-t items-center mt-6 pt-4 gap-3 sm:gap-6">
+            <p className="font-medium text-center sm:text-left">
+              Total ({selectedForCheckout.length} item
+              {selectedForCheckout.length > 1 ? "s" : ""}):{" "}
+              <span className="text-lg font-bold text-green-600">
+                ₱{total.toLocaleString()}
+              </span>
+            </p>
+            <Button
+              onClick={handleCheckout}
+              disabled={isSubmitting || !user?.address?.length}
+              className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+            >
+              Submit Request
+            </Button>
           </div>
         )}
       </div>
