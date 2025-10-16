@@ -120,7 +120,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
                 size="sm"
                 variant="ghost"
                 className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => router.push(`/order-history/${order.orderId}`)}
+                onClick={() => router.push(`/service-history/${order.orderId}`)}
               >
                 View Details
               </Button>

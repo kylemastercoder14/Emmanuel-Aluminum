@@ -21,7 +21,7 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="sidebar" />
+      <AppSidebar variant="sidebar" name={staff.firstName} role={staff.role} />
       <SidebarInset>
         <SiteHeader />
         <main className="p-5">

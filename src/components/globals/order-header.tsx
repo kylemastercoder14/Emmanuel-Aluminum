@@ -5,7 +5,7 @@ import Link from "next/link";
 const OrderHeader = ({orderCount}: {orderCount: number}) => {
   return (
     <Link
-      href="/order-history"
+      href="/service-history"
       className="text-white flex items-center gap-2 relative hover:text-gray-200 mt-0.5 font-medium transition-colors"
     >
       <FileText className="size-6" />

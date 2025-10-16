@@ -53,7 +53,7 @@ export const signIn = async (values: z.infer<typeof adminSchema>) => {
       path: "/", // Adjust path as needed
     });
 
-    return { success: "Login successful" };
+    return { success: "Login successful", role: user.role };
   } catch (error: any) {
     console.error("Error logging in user", error);
     return {

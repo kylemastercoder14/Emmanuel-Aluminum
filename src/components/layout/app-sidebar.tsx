@@ -67,7 +67,10 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ role, name, ...props }: React.ComponentProps<typeof Sidebar> & {
+  role: string;
+  name: string;
+}) {
   const pathname = usePathname();
   const handleLogout = async () => {
     await signOut();
@@ -85,9 +88,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="bg-[#525252] text-white">
         <h3 className="text-white font-semibold text-lg mt-5 ml-4">
-          Welcome Admin
+          Welcome, {name}
         </h3>
-        <NavMain items={data.navMain} pathname={pathname} />
+        <NavMain role={role} items={data.navMain} pathname={pathname} />
       </SidebarContent>
       <SidebarFooter className="bg-[#525252]">
         <SidebarMenu>

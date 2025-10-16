@@ -54,7 +54,7 @@ const NotificationPage = ({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 sm:px-10 lg:py-10 py-30">
+    <div className="min-h-screen bg-gray-50 px-4 sm:px-10 py-30">
       <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center sm:text-left">
         Notifications
       </h1>

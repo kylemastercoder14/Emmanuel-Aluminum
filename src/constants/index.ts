@@ -40,4 +40,4 @@ export const UNITS = [
   "gal",
 ];
 
-export const ROLES = ["Admin", "Staff", "Owner"];
+export const ROLES = ["Admin", "Customer Service", "Staff"];

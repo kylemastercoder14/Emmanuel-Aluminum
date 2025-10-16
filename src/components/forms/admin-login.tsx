@@ -40,7 +40,12 @@ const AdminLoginForm = () => {
 
       if (res.success) {
         toast.success(res.success);
-        router.push(`/admin/dashboard`);
+        if(res.role === "Admin") {
+
+          router.push(`/admin/dashboard`);
+        }else {
+          router.push("/admin/service-listings/history")
+        }
       } else {
         toast.error(res.error);
       }

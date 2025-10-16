@@ -21,6 +21,7 @@ import {
 export function NavMain({
   items,
   pathname,
+  role,
 }: {
   items: {
     title: string;
@@ -32,6 +33,7 @@ export function NavMain({
     }[];
   }[];
   pathname: string;
+  role: string;
 }) {
   const router = useRouter();
 
@@ -39,16 +41,21 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         {/* Static Dashboard link */}
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton isActive={pathname === "/admin/dashboard"} onClick={() => router.push("/admin/dashboard")}>
-              <div className="flex size-5 rounded-full items-center bg-sky-300 justify-center">
-                <IconChartHistogram className="size-3 text-black" />
-              </div>
-              <span>Dashboard</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {role === "Admin" && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname === "/admin/dashboard"}
+                onClick={() => router.push("/admin/dashboard")}
+              >
+                <div className="flex size-5 rounded-full items-center bg-sky-300 justify-center">
+                  <IconChartHistogram className="size-3 text-black" />
+                </div>
+                <span>Dashboard</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
 
         {/* Dynamic menu items */}
         <SidebarMenu>
@@ -84,9 +91,7 @@ export function NavMain({
                         <SidebarMenuItem key={sub.title}>
                           <SidebarMenuButton
                             asChild
-                            isActive={
-                              sub.url === pathname
-                            }
+                            isActive={sub.url === pathname}
                           >
                             <a href={sub.url}>{sub.title}</a>
                           </SidebarMenuButton>

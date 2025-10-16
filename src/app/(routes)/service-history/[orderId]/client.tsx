@@ -11,13 +11,13 @@ import { useRouter } from "next/navigation";
 const OrderDetails = ({ order }: { order: OrderWithOrderItems | null }) => {
   const router = useRouter();
   return (
-    <div className="min-h-screen lg:pt-20 pt-30 lg:p-10 mb-20 lg:px-20 px-8 bg-gray-50">
+    <div className="min-h-screen pt-30 lg:p-10 mb-20 lg:px-20 px-8 bg-gray-50">
       <div className="flex items-center gap-2 mb-6">
         <Button
           title="Go back"
           variant="ghost"
           size="icon"
-          onClick={() => router.push("/order-history")}
+          onClick={() => router.push("/service-history")}
         >
           <ArrowLeft className="size-4" />
         </Button>
