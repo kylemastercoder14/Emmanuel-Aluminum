@@ -171,6 +171,10 @@ export const signIn = async (values: z.infer<typeof loginSchema>) => {
       return { error: "Invalid password." };
     }
 
+    if (!user.isEmailVerified) {
+      return { error: "Please verify your email first" };
+    }
+
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const alg = "HS256";
 
