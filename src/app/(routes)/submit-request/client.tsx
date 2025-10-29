@@ -76,7 +76,7 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
         toast.error(response.error);
         return;
       }
-      router.push(`/order-history/${response.orderId}`);
+      router.push(`/service-history/${response.orderId}`);
       toast.success("Checkout successful!");
       removeAll();
     } catch (error) {

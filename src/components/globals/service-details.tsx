@@ -3,8 +3,9 @@
 import { Service } from "@prisma/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useCart from "@/hooks/use-cart";
+import { toast } from 'sonner';
 
 const ServiceDetails = ({ data }: { data: Service | null }) => {
   const router = useRouter();
@@ -24,11 +25,17 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
   }
 
   const handleAddToCart = () => {
-    if (!selectedColor) return;
+    // If service has colors but none selected
+    if (data.colors?.length && !selectedColor) {
+      toast.error("Please select a color before adding to cart");
+      return;
+    }
 
     // Check if item already exists in cart
     const existingItem = items.find(
-      (item) => item.id === data.id && item.color === selectedColor
+      (item) =>
+        item.id === data.id &&
+        (!data.colors?.length || item.color === selectedColor)
     );
 
     if (existingItem) {
@@ -44,7 +51,7 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
         name: data.name,
         image: selectedImage,
         price: data.price,
-        color: selectedColor,
+        color: selectedColor || "",
         quantity,
       });
     }
