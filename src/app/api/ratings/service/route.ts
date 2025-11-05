@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     if (!validatedData.success) {
       return NextResponse.json(
-        { error: "Invalid data", details: validatedData.error.errors },
+        { error: "Invalid data", details: validatedData.error.issues },
         { status: 400 }
       );
     }
