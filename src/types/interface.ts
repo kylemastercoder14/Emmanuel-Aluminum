@@ -7,6 +7,7 @@ import {
   OrderItems,
   Orders,
   Service,
+  ServiceRating,
   Staff,
   Supplier,
   User,
@@ -33,6 +34,7 @@ export interface UserWithProps extends User {
 
 export interface OrderItemsWithService extends OrderItems {
   service: Service;
+  serviceRating?: ServiceRating | null;
 }
 
 export interface OrderWithOrderItems extends Orders {

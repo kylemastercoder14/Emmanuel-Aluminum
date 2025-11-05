@@ -17,6 +17,7 @@ const Page = async () => {
       orderItems: {
         include: {
           service: true,
+          serviceRating: true,
         },
       },
     },

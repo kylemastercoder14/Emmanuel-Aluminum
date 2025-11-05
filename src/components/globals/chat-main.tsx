@@ -82,12 +82,22 @@ const MessageBubble = ({
 const ChatMain = ({
   userId,
   conversationId,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange,
+  hideButton = false,
 }: {
   userId: string;
   conversationId: string | null;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideButton?: boolean;
 }) => {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  // Use external state if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalOnOpenChange || setInternalIsOpen;
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -344,17 +354,19 @@ const ChatMain = ({
           </div>
         </div>
       </Modal>
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        type="button"
-        size="icon"
-        className="fixed p-5 bottom-5 right-5 rounded-full"
-      >
-        <IconMessage className="size-6" />
-        <div className="absolute -top-1 -right-1 bg-red-600 flex items-center justify-center size-4 rounded-full font-bold text-[8px]">
-          {messages.filter((msg) => !msg.isRead).length}
-        </div>
-      </Button>
+      {!hideButton && (
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          size="icon"
+          className="fixed p-5 bottom-5 right-5 rounded-full"
+        >
+          <IconMessage className="size-6" />
+          <div className="absolute -top-1 -right-1 bg-red-600 flex items-center justify-center size-4 rounded-full font-bold text-[8px]">
+            {messages.filter((msg) => !msg.isRead).length}
+          </div>
+        </Button>
+      )}
     </>
   );
 };

@@ -19,12 +19,14 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  orders        Orders[]
-  address       Address[]
-  notifications Notifications[]
-  message       Message[]
-  conversation  Conversation[]
-  report        Report[]
+  orders         Orders[]
+  address        Address[]
+  notifications  Notifications[]
+  message        Message[]
+  conversation   Conversation[]
+  report         Report[]
+  serviceRatings ServiceRating[]
+  feedback       Feedback[]
 }
 
 model Address {
@@ -98,8 +100,9 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  materials  Material[]
-  orderItems OrderItems[]
+  materials      Material[]
+  orderItems     OrderItems[]
+  serviceRatings ServiceRating[]
 }
 
 model Task {
@@ -147,6 +150,8 @@ model OrderItems {
 
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  serviceRating ServiceRating?
 }
 
 model Notifications {
@@ -230,12 +235,40 @@ model Quotation {
   variants      String? // e.g. frosted, tinted, powder-coated
   description   String?
   preferredDate DateTime
-  status String @default("PENDING")
-  note String?
+  status        String   @default("PENDING")
+  note          String?
 }
 
 enum Unit {
   INCH
   CM
   FT
+}
+
+model ServiceRating {
+  id        String   @id @default(uuid())
+  rating    Int // 1-5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderItemId String     @unique
+  orderItem   OrderItems @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  Service     Service?   @relation(fields: [serviceId], references: [id])
+  serviceId   String?
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  type      String // e.g., "Service Quality", "Customer Service", "Overall Experience"
+  rating    Int // 1-5 stars
+  message   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

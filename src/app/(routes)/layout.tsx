@@ -2,7 +2,7 @@
 import React from "react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import CustomerService from "@/components/globals/customer-service";
+import FloatingActionButtons from "@/components/globals/floating-action-buttons";
 import { useUser } from "@/hooks/use-user";
 import db from "@/lib/db";
 
@@ -16,13 +16,22 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
         },
       })
     : 0;
+
+  // Get conversation ID for chat
+  const conversationId = user?.conversation?.[0]?.id ?? null;
+
   return (
     <div>
       <Navbar orderCount={orderCount} user={user} />
       {children}
       {/* Footer Section */}
       <Footer />
-      <CustomerService />
+      {userId && (
+        <FloatingActionButtons
+          userId={userId}
+          conversationId={conversationId}
+        />
+      )}
     </div>
   );
 };

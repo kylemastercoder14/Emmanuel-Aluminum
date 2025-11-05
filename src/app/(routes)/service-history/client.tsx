@@ -1,15 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { OrderWithOrderItems } from "@/types/interface";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import RateServiceForm from "@/components/forms/rate-service";
 
 const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
   const router = useRouter();
+  const [ratingModalOpen, setRatingModalOpen] = useState(false);
+  const [selectedOrderItem, setSelectedOrderItem] = useState<{
+    id: string;
+    serviceName: string;
+  } | null>(null);
 
   const handleCancelOrder = async (orderId: string) => {
     const confirmCancel = confirm(
@@ -76,7 +83,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
                     height={80}
                     className="rounded border"
                   />
-                  <div className="flex flex-col">
+                  <div className="flex flex-col flex-1">
                     <p className="font-medium">{item.service.name}</p>
                     <p className="text-sm text-gray-500">
                       {item.color} • {item.quantity} pcs
@@ -84,6 +91,27 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
                     <p className="text-sm">
                       ₱{item.unitPrice.toLocaleString()}
                     </p>
+                    {order.status === "Completed" && !item.serviceRating && (
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        className="mt-2 w-fit"
+                        onClick={() => {
+                          setSelectedOrderItem({
+                            id: item.id,
+                            serviceName: item.service.name,
+                          });
+                          setRatingModalOpen(true);
+                        }}
+                      >
+                        Rate Service
+                      </Button>
+                    )}
+                    {item.serviceRating && (
+                      <p className="text-sm text-green-600 mt-1">
+                        ✓ Rated ({item.serviceRating.rating} stars)
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -138,6 +166,25 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
           </div>
         ))
       )}
+
+      {/* Rating Modal */}
+      <Dialog open={ratingModalOpen} onOpenChange={setRatingModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rate Service</DialogTitle>
+          </DialogHeader>
+          {selectedOrderItem && (
+            <RateServiceForm
+              orderItemId={selectedOrderItem.id}
+              serviceName={selectedOrderItem.serviceName}
+              onClose={() => {
+                setRatingModalOpen(false);
+                setSelectedOrderItem(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

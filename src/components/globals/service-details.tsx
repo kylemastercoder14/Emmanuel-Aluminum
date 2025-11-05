@@ -6,6 +6,27 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import useCart from "@/hooks/use-cart";
 import { toast } from 'sonner';
+import { StarRating } from "@/components/ui/star-rating";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDistanceToNow } from "date-fns";
+
+interface ServiceRating {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
+}
+
+interface RatingsData {
+  ratings: ServiceRating[];
+  averageRating: number;
+  totalRatings: number;
+}
 
 const ServiceDetails = ({ data }: { data: Service | null }) => {
   const router = useRouter();
@@ -16,8 +37,32 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
     data?.colors[0] || null
   );
   const [quantity, setQuantity] = useState<number>(1);
+  const [ratingsData, setRatingsData] = useState<RatingsData | null>(null);
+  const [isLoadingRatings, setIsLoadingRatings] = useState(false);
 
   const { addItem, updateQuantity, items } = useCart();
+
+  // Fetch ratings for this service
+  useEffect(() => {
+    if (!data?.id) return;
+
+    const fetchRatings = async () => {
+      setIsLoadingRatings(true);
+      try {
+        const res = await fetch(`/api/ratings/service/${data.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRatingsData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      } finally {
+        setIsLoadingRatings(false);
+      }
+    };
+
+    fetchRatings();
+  }, [data?.id]);
 
   if (!data) {
     router.push("/");
@@ -172,6 +217,84 @@ const ServiceDetails = ({ data }: { data: Service | null }) => {
             <p className="text-gray-600">{data?.description}</p>
           </div>
         </div>
+      </div>
+
+      {/* Ratings Section */}
+      <div className="mt-12 border-t pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-bold mb-2">Customer Reviews</h3>
+            {ratingsData && ratingsData.totalRatings > 0 ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl font-bold">
+                    {ratingsData.averageRating}
+                  </span>
+                  <StarRating
+                    rating={Math.round(ratingsData.averageRating)}
+                    readonly={true}
+                    size={20}
+                  />
+                </div>
+                <span className="text-gray-600">
+                  Based on {ratingsData.totalRatings} review
+                  {ratingsData.totalRatings !== 1 ? "s" : ""}
+                </span>
+              </div>
+            ) : (
+              <p className="text-gray-600">No reviews yet</p>
+            )}
+          </div>
+        </div>
+
+        {isLoadingRatings ? (
+          <div className="text-center py-8 text-gray-500">Loading reviews...</div>
+        ) : ratingsData && ratingsData.ratings.length > 0 ? (
+          <div className="space-y-6">
+            {ratingsData.ratings.map((rating) => (
+              <div
+                key={rating.id}
+                className="border rounded-lg p-4 bg-gray-50"
+              >
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={rating.user.image || "/placeholder.svg"}
+                      alt={rating.user.name}
+                    />
+                    <AvatarFallback>
+                      {rating.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-semibold">{rating.user.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(rating.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                      <StarRating
+                        rating={rating.rating}
+                        readonly={true}
+                        size={18}
+                      />
+                    </div>
+                    {rating.comment && (
+                      <p className="text-gray-700 mt-2">{rating.comment}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            No reviews yet. Be the first to review this service!
+          </div>
+        )}
       </div>
     </div>
   );

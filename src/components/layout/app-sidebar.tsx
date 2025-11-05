@@ -7,6 +7,8 @@ import {
   IconLogout,
   IconShoppingBag,
   IconUsers,
+  IconStar,
+  IconMessageCircle,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/layout/nav-main";
@@ -63,6 +65,16 @@ const data = {
       title: "Service Quotation",
       url: "/admin/service-quotation",
       icon: IconCalculator,
+    },
+    {
+      title: "Service Ratings",
+      url: "/admin/service-ratings",
+      icon: IconStar,
+    },
+    {
+      title: "Feedbacks",
+      url: "/admin/feedbacks",
+      icon: IconMessageCircle,
     },
   ],
 };
