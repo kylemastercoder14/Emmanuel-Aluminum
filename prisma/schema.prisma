@@ -228,15 +228,16 @@ model Quotation {
   contactNumber String
   email         String
 
-  serviceType   String
-  size          String // e.g. "48 x 72"
-  unit          Unit // inch, cm, ft
-  color         String?
-  variants      String? // e.g. frosted, tinted, powder-coated
-  description   String?
-  preferredDate DateTime
-  status        String   @default("PENDING")
-  note          String?
+  serviceType    String
+  size           String // e.g. "48 x 72"
+  unit           Unit // inch, cm, ft
+  color          String?
+  variants       String? // e.g. frosted, tinted, powder-coated
+  description    String?
+  preferredDate  DateTime
+  estimatedPrice Float?
+  status         String   @default("PENDING")
+  note           String?
 }
 
 enum Unit {

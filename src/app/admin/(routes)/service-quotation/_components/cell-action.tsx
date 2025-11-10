@@ -24,11 +24,22 @@ import AlertModal from "@/components/globals/alert-modal";
 import { toast } from "sonner";
 import { deleteQuotation, updateQuotationStatus } from "@/actions/user";
 import { Quotation } from "@prisma/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const CellAction = ({ data }: { data: Quotation }) => {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState(false);
+  const [approveModalOpen, setApproveModalOpen] = React.useState(false);
+  const [estimatedPrice, setEstimatedPrice] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
 
   const onDelete = async () => {
     try {
@@ -56,6 +67,12 @@ const CellAction = ({ data }: { data: Quotation }) => {
             ? "REJECTED"
             : "PENDING";
 
+      // If approving, require estimated price modal
+      if (data.status === "PENDING" && nextStatus === "APPROVED") {
+        setApproveModalOpen(true);
+        return;
+      }
+
       const response = await updateQuotationStatus(data.id, nextStatus);
       if (response.success) {
         toast.success(response.success);
@@ -68,6 +85,36 @@ const CellAction = ({ data }: { data: Quotation }) => {
       console.error("Status change error:", error);
     } finally {
       setStatusOpen(false);
+    }
+  };
+
+  const onApproveWithPrice = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!estimatedPrice) {
+      toast.error("Please enter the estimated price.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const response = await updateQuotationStatus(
+        data.id,
+        "APPROVED",
+        undefined,
+        estimatedPrice
+      );
+      if (response.success) {
+        toast.success(response.success);
+      } else {
+        toast.error(response.error);
+      }
+      setApproveModalOpen(false);
+      setEstimatedPrice("");
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to approve quotation. 😥");
+      console.error("Approve error:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -110,7 +157,7 @@ const CellAction = ({ data }: { data: Quotation }) => {
           </DropdownMenuItem>
           {data.status === "PENDING" && (
             <>
-              <DropdownMenuItem onClick={() => setStatusOpen(true)}>
+              <DropdownMenuItem onClick={onStatus}>
                 <CircleCheck className="size-4" />
                 Approve
               </DropdownMenuItem>
@@ -144,6 +191,42 @@ const CellAction = ({ data }: { data: Quotation }) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <Dialog open={approveModalOpen} onOpenChange={setApproveModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Quotation With Estimated Price</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={onApproveWithPrice} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Estimated Price (₱)
+              </label>
+              <Input
+                type="number"
+                min="0"
+                value={estimatedPrice}
+                onChange={(e) => setEstimatedPrice(e.target.value)}
+                placeholder="Enter estimated price"
+                required
+                step="0.01"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setApproveModalOpen(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                Approve and Send
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

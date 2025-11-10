@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import CellAction from "./cell-action";
 import { Staff } from "@prisma/client";
 
-export const columns: ColumnDef<Staff>[] = [
+export const getColumns = (currentRole: string): ColumnDef<Staff>[] => [
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -138,7 +138,7 @@ export const columns: ColumnDef<Staff>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const data = row.original;
-      return <CellAction data={data} />;
+      return <CellAction data={data} currentRole={currentRole} />;
     },
   },
 ];

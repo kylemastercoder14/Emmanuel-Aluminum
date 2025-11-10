@@ -20,6 +20,7 @@ interface QuotationStatusEmailProps {
   unit: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   note?: string;
+  estimatedPrice?: number;
 }
 
 export const QuotationStatusEmail = ({
@@ -30,6 +31,7 @@ export const QuotationStatusEmail = ({
   unit,
   status,
   note,
+  estimatedPrice,
 }: QuotationStatusEmailProps) => {
   let title = "";
   let previewText = "";
@@ -95,6 +97,11 @@ export const QuotationStatusEmail = ({
                     {status}
                   </span>
                 </Text>
+                {typeof estimatedPrice !== "undefined" && status === "APPROVED" && (
+                  <Text style={detailText}>
+                    <strong>Estimated Price:</strong> ₱{estimatedPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </Text>
+                )}
                 {note && (
                   <Text style={detailText}>
                     <strong>Note from staff:</strong> {note}

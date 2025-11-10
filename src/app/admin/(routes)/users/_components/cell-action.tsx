@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { Staff } from "@prisma/client";
 import { deleteUser, updateUserStatus } from "@/actions/user";
 
-const CellAction = ({ data }: { data: Staff }) => {
+const CellAction = ({ data, currentRole }: { data: Staff; currentRole: string; }) => {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState({
@@ -66,6 +66,8 @@ const CellAction = ({ data }: { data: Staff }) => {
       setStatusOpen({ ...statusOpen, toggle: false });
     }
   };
+
+  if(currentRole !== "Admin") return null;
   return (
     <>
       <AlertModal

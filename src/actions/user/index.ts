@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import z from "zod";
@@ -242,12 +243,18 @@ export const deleteQuotation = async (id: string) => {
 export const updateQuotationStatus = async (
   id: string,
   status: "PENDING" | "APPROVED" | "REJECTED",
-  note?: string
+  note?: string,
+  estimatedPrice?: string | number // may come from form as string
 ) => {
   try {
+    // Only update estimatedPrice if provided and status is APPROVED
+    const dataToUpdate: any = { status, note };
+    if (typeof estimatedPrice !== "undefined" && status === "APPROVED") {
+      dataToUpdate.estimatedPrice = parseFloat(String(estimatedPrice));
+    }
     const quotation = await db.quotation.update({
       where: { id },
-      data: { status, note },
+      data: dataToUpdate,
     });
 
     await sendQuotationToEmail(
@@ -257,7 +264,9 @@ export const updateQuotationStatus = async (
       quotation.serviceType,
       quotation.size,
       quotation.unit,
-      status
+      status,
+      note,
+      quotation.estimatedPrice ?? 0 // pass estimated price
     );
 
     return { success: `Quotation has been ${quotation.status.toLowerCase()}.` };

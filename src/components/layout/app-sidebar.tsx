@@ -27,7 +27,7 @@ import { signOut } from "@/actions/auth";
 import { toast } from "sonner";
 
 const data = {
-  navMain: [
+  navMainAdmin: [
     {
       title: "User",
       url: "/admin/users",
@@ -77,9 +77,79 @@ const data = {
       icon: IconMessageCircle,
     },
   ],
+  navMainStaff: [
+    {
+      title: "Service Listings",
+      url: "#",
+      icon: IconShoppingBag,
+      items: [
+        {
+          title: "Service Creation",
+          url: "/admin/service-listings",
+        },
+        {
+          title: "Service History",
+          url: "/admin/service-listings/history",
+        },
+        {
+          title: "Service Schedule",
+          url: "/admin/service-listings/schedule",
+        },
+        {
+          title: "Service Cancellation",
+          url: "/admin/service-listings/cancellation",
+        },
+      ],
+    },
+    {
+      title: "Project Tracking",
+      url: "/admin/project-tracking",
+      icon: IconFolders,
+    },
+  ],
+  navMainCS: [
+    {
+      title: "Service Listings",
+      url: "#",
+      icon: IconShoppingBag,
+      items: [
+        {
+          title: "Service History",
+          url: "/admin/service-listings/history",
+        },
+        {
+          title: "Service Schedule",
+          url: "/admin/service-listings/schedule",
+        },
+        {
+          title: "Service Cancellation",
+          url: "/admin/service-listings/cancellation",
+        },
+      ],
+    },
+    {
+      title: "Service Quotation",
+      url: "/admin/service-quotation",
+      icon: IconCalculator,
+    },
+    {
+      title: "Service Ratings",
+      url: "/admin/service-ratings",
+      icon: IconStar,
+    },
+    {
+      title: "Feedbacks",
+      url: "/admin/feedbacks",
+      icon: IconMessageCircle,
+    },
+  ],
 };
 
-export function AppSidebar({ role, name, ...props }: React.ComponentProps<typeof Sidebar> & {
+export function AppSidebar({
+  role,
+  name,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
   role: string;
   name: string;
 }) {
@@ -89,6 +159,22 @@ export function AppSidebar({ role, name, ...props }: React.ComponentProps<typeof
     window.location.href = "/admin";
     toast.success("Logged out successfully");
   };
+  let routes;
+  switch (role) {
+    case "Admin":
+      routes = data.navMainAdmin;
+      break;
+    case "Staff":
+      routes = data.navMainStaff;
+      break;
+    case "Customer Service":
+      routes = data.navMainCS;
+      break;
+    default:
+      routes = data.navMainStaff;
+      break;
+  }
+
   return (
     <Sidebar
       className="bg-[#525252] text-white"
@@ -102,7 +188,7 @@ export function AppSidebar({ role, name, ...props }: React.ComponentProps<typeof
         <h3 className="text-white font-semibold text-lg mt-5 ml-4">
           Welcome, {name}
         </h3>
-        <NavMain role={role} items={data.navMain} pathname={pathname} />
+        <NavMain role={role} items={routes} pathname={pathname} />
       </SidebarContent>
       <SidebarFooter className="bg-[#525252]">
         <SidebarMenu>

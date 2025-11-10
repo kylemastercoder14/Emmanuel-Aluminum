@@ -46,7 +46,8 @@ export const sendQuotationToEmail = async (
   size: string,
   unit: string,
   status: "PENDING" | "APPROVED" | "REJECTED",
-  note?: string
+  note?: string,
+  estimatedPrice?: number
 ) => {
   const htmlContent = await QuotationStatusEmailHTML({
     firstName,
@@ -56,6 +57,7 @@ export const sendQuotationToEmail = async (
     unit,
     status,
     note,
+    estimatedPrice,
   });
 
   const transporter = nodemailer.createTransport({
@@ -77,7 +79,7 @@ export const sendQuotationToEmail = async (
       ? `Hello ${firstName} ${lastName}, we’ve received your quotation request for ${serviceType} (${size} ${unit}). Our team is reviewing it and will update you soon.`
       : `Hello ${firstName} ${lastName}, your quotation for ${serviceType} (${size} ${unit}) has been ${status}. ${
           note ? "Note: " + note : ""
-        }`;
+        }${status === "APPROVED" && estimatedPrice ? ` Estimated Price: ₱${estimatedPrice}` : ""}`;
 
   const message = {
     from: "aluminumfabricationemmanuel@gmail.com",

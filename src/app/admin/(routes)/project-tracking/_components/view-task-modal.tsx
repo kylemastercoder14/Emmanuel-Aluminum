@@ -11,7 +11,6 @@ import {
   IconFileText,
 } from "@tabler/icons-react";
 
-// Helper: format date + time
 function formatDateTime(date: Date | string) {
   const d = new Date(date);
   return d.toLocaleString("en-PH", {
@@ -28,11 +27,17 @@ const ViewTask = ({
   data,
   onEdit,
   onDelete,
+  currentRole,
 }: {
   data: Task;
   onEdit: () => void;
   onDelete: () => void;
+  currentRole: string;
 }) => {
+  const isAdmin = currentRole === "Admin";
+  const isStaff = currentRole === "Staff";
+  const isCustomerService = currentRole === "Customer Service";
+
   return (
     <div>
       <div className="bg-secondary border-l-4 mt-5 border-[#525252] px-3 py-2">
@@ -66,13 +71,18 @@ const ViewTask = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2">
-        <Button size="sm" variant="ghost" onClick={onEdit}>
-          Edit
-        </Button>
-        <Button size="sm" variant="destructive" onClick={onDelete}>
-          Delete
-        </Button>
+      <div className="flex items-center justify-end gap-2 mt-5">
+        {(isAdmin || isStaff) && (
+          <Button size="sm" variant="ghost" onClick={onEdit}>
+            Edit
+          </Button>
+        )}
+
+        {isAdmin && (
+          <Button size="sm" variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        )}
       </div>
     </div>
   );

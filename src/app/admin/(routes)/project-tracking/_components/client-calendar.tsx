@@ -16,14 +16,19 @@ import { Task } from "@prisma/client";
 
 const ClientCalendar = ({
   tasks,
+  currentRole,
   onTaskClick,
   onDateClick,
 }: {
   tasks: Task[];
+  currentRole: string;
   onTaskClick: (task: Task) => void;
   onDateClick: (date: Date) => void;
 }) => {
-  // Map DB tasks to Syncfusion events
+  const isAdmin = currentRole === "Admin";
+  const isStaff = currentRole === "Staff";
+  const isCustomerService = currentRole === "Customer Service";
+
   const events = tasks.map((task) => ({
     Id: task.id,
     Subject: task.subject,
@@ -42,18 +47,20 @@ const ClientCalendar = ({
         timezone="Asia/Manila"
         eventSettings={{
           dataSource: events,
-          allowAdding: false,
-          allowEditing: false,
-          allowDeleting: false,
+          allowAdding: isAdmin, // only admin can create
+          allowEditing: isAdmin || isStaff, // admin & staff can edit
+          allowDeleting: isAdmin, // only admin can delete
         }}
         showQuickInfo={false}
         selectedDate={today}
         currentView="Month"
         height={900}
         eventClick={(args: any) => onTaskClick(args.event.rawTask)}
-        cellClick={(args: any) =>
-          args?.startTime ? onDateClick(args.startTime) : null
-        }
+        cellClick={(args: any) => {
+          if (isAdmin && args?.startTime) {
+            onDateClick(args.startTime);
+          }
+        }}
       >
         <ViewsDirective>
           <ViewDirective option="Day" />

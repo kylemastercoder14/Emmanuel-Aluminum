@@ -12,17 +12,27 @@ import { useRouter } from "next/navigation";
 import ClientCalendar from "./client-calendar";
 import { registerLicense } from "@syncfusion/ej2-base";
 
-// Register Syncfusion license once here
 registerLicense(process.env.NEXT_PUBLIC_SYNCFUSION_LICENSE_KEY!);
 
-const CalendarWrapper = ({ tasks }: { tasks: Task[] }) => {
+const CalendarWrapper = ({
+  tasks,
+  currentRole,
+}: {
+  tasks: Task[];
+  currentRole: string;
+}) => {
   const router = useRouter();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  const isAdmin = currentRole === "Admin";
+  const isStaff = currentRole === "Staff";
+  const isCustomerService = currentRole === "Customer Service";
+
   const handleDelete = async (taskId: string) => {
+    if (!isAdmin) return; // ❌ only admins can delete
     const res = await deleteTask(taskId);
 
     if (res.error) {
@@ -48,11 +58,16 @@ const CalendarWrapper = ({ tasks }: { tasks: Task[] }) => {
         {selectedTask ? (
           <ViewTask
             data={selectedTask}
+            currentRole={currentRole}
             onEdit={() => {
+              // Admin or Staff can edit
+              if (!isAdmin && !isStaff) return;
               setViewModalOpen(false);
               setFormModalOpen(true);
             }}
             onDelete={() => {
+              // Only Admin can delete
+              if (!isAdmin) return;
               setViewModalOpen(false);
               handleDelete(selectedTask.id);
             }}
@@ -63,38 +78,44 @@ const CalendarWrapper = ({ tasks }: { tasks: Task[] }) => {
       </Modal>
 
       {/* Create / Update Form Modal */}
-      <Modal
-        isOpen={formModalOpen}
-        onClose={() => {
-          setFormModalOpen(false);
-          setSelectedDate(null);
-          setSelectedTask(null);
-        }}
-        title={selectedTask ? "Update Task" : "Create Task"}
-      >
-        <TaskForm
-          initialData={selectedTask}
-          selectedDate={
-            selectedDate ? formatDateTimeLocal(selectedDate) : null
-          }
+      {(isAdmin || isStaff) && (
+        <Modal
+          isOpen={formModalOpen}
           onClose={() => {
             setFormModalOpen(false);
             setSelectedDate(null);
             setSelectedTask(null);
           }}
-        />
-      </Modal>
+          title={selectedTask ? "Update Task" : "Create Task"}
+        >
+          <TaskForm
+            initialData={selectedTask}
+            selectedDate={
+              selectedDate ? formatDateTimeLocal(selectedDate) : null
+            }
+            onClose={() => {
+              setFormModalOpen(false);
+              setSelectedDate(null);
+              setSelectedTask(null);
+            }}
+          />
+        </Modal>
+      )}
 
       {/* Calendar */}
       <ClientCalendar
         tasks={tasks}
+        currentRole={currentRole}
         onTaskClick={(task) => {
           setSelectedTask(task);
           setViewModalOpen(true);
         }}
         onDateClick={(date) => {
-          setSelectedDate(date);
-          setFormModalOpen(true);
+          // Only Admin can create
+          if (isAdmin) {
+            setSelectedDate(date);
+            setFormModalOpen(true);
+          }
         }}
       />
     </>
