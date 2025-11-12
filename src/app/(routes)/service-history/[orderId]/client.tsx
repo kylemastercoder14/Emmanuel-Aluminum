@@ -65,7 +65,18 @@ const OrderDetails = ({ order }: { order: OrderWithOrderItems | null }) => {
         <div className="flex flex-col items-start justify-start space-y-4">
           <div className="flex w-full items-center justify-between gap-2">
             <p className="font-medium">Sub-total</p>
-            <p>₱{order?.totalAmount.toLocaleString()}</p>
+            <p>
+              ₱
+              {order?.orderItems
+                ? order.orderItems
+                    .reduce(
+                      (sum, item) =>
+                        sum + Number(item.unitPrice) * Number(item.quantity),
+                      0
+                    )
+                    .toLocaleString()
+                : 0}
+            </p>
           </div>
           <div className="flex w-full items-center justify-between gap-2">
             <p className="font-medium">VAT</p>
@@ -73,7 +84,7 @@ const OrderDetails = ({ order }: { order: OrderWithOrderItems | null }) => {
           </div>
           <div className="flex w-full items-center justify-between gap-2">
             <p className="font-medium">Discounts</p>
-            <p>₱0</p>
+            <p>₱{(order?.totalDiscount ?? 0).toLocaleString()}</p>
           </div>
           <div className="flex w-full items-center justify-between gap-2">
             <p className="font-bold">Total Amount</p>

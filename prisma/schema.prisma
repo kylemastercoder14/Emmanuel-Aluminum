@@ -18,6 +18,7 @@ model User {
   isEmailVerified Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  isActive        Boolean  @default(true)
 
   orders         Orders[]
   address        Address[]
@@ -117,11 +118,18 @@ model Task {
 }
 
 model Orders {
-  id            String @id @default(uuid())
-  orderId       String @unique
-  status        String @default("Pending") // Pending, Scheduled, Completed, Cancelled
-  totalAmount   Float
-  paymentMethod String
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  status            String   @default("Pending") // Pending, Scheduled, Completed, Cancelled
+  paymentStatus     String   @default("Pending") // Pending, Paid, Failed, Partial
+  paymentAttachment String[] @default([])        // aggregated attachments (all attachments)
+  totalAmount       Float
+  paidAmount        Float   @default(0)          // <-- NEW: how much has been paid so far
+  totalDiscount     Float?
+  paymentMethod     String
+  isSeniorOrPwd     Boolean  @default(false)
+  seniorPwdId       String[] @default([])
+  isActive          Boolean  @default(true)
 
   scheduledDate String?
   scheduledTime String?
@@ -134,6 +142,17 @@ model Orders {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orderItems OrderItems[]
+  payments   Payment[] // relation to Payment table
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Orders   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount      Float
+  attachments String[] @default([])   // one or more proof files (urls)
+  note        String?                 // optional note (e.g. "down payment")
+  createdAt   DateTime @default(now())
 }
 
 model OrderItems {
@@ -238,6 +257,7 @@ model Quotation {
   estimatedPrice Float?
   status         String   @default("PENDING")
   note           String?
+  isActive       Boolean  @default(true)
 }
 
 enum Unit {

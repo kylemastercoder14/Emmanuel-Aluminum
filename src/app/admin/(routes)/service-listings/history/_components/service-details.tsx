@@ -16,6 +16,12 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
   const router = useRouter();
   if (!order) return <p>No order found.</p>;
 
+  // Compute subtotal (sum of item.price * quantity)
+  const subtotal = order.orderItems.reduce(
+    (sum, item) => sum + Number(item.unitPrice) * Number(item.quantity),
+    0
+  );
+
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -24,6 +30,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
         </Button>
         <Heading title={"Service Details"} description={""} />
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Left Column: Order & Customer Info */}
         <div className="space-y-6">
@@ -35,9 +42,43 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
             </p>
             <p>Payment Method: {order.paymentMethod}</p>
             <p>
-              Scheduled: {order.scheduledDate} at {order.scheduledTime}
+              Scheduled: {order.scheduledDate ?? "Not scheduled"}{" "}
+              {order.scheduledTime && `at ${order.scheduledTime}`}
             </p>
             <p>Total Amount: ₱{order.totalAmount.toLocaleString()}</p>
+
+            {/* ✅ Show Total Discount if any */}
+            <p>
+              Total Discounts: ₱{(order.totalDiscount ?? 0).toLocaleString()}
+            </p>
+
+            {/* ✅ Show Senior/PWD info */}
+            {order.isSeniorOrPwd && (
+              <div className="mt-3">
+                <p className="font-medium">Senior/PWD ID:</p>
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {order.seniorPwdId?.length > 0 ? (
+                    order.seniorPwdId.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-28 h-28 border rounded-lg overflow-hidden"
+                      >
+                        <Image
+                          src={img}
+                          alt={`Senior/PWD ID ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No Senior/PWD ID uploaded
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Customer Info */}
@@ -67,6 +108,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
                     className="object-cover"
                   />
                 </div>
+
                 {/* Service Info */}
                 <div className="w-[80%]">
                   <h3 className="text-md font-semibold">{item.service.name}</h3>
@@ -77,7 +119,15 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
                     Color: <span className="font-medium">{item.color}</span>
                   </p>
                   <p>Quantity: {item.quantity}</p>
-                  <p>Unit Price: ₱{Number(item.unitPrice).toLocaleString()}</p>
+                  <p>
+                    Unit Price: ₱{Number(item.unitPrice).toLocaleString()}
+                  </p>
+                  <p className="font-medium mt-1">
+                    Total: ₱
+                    {(
+                      Number(item.unitPrice) * Number(item.quantity)
+                    ).toLocaleString()}
+                  </p>
                 </div>
               </div>
             ))}
@@ -87,7 +137,11 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
           <div className="mt-6 border-t pt-4 space-y-1 text-sm">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>₱{order.totalAmount.toLocaleString()}</span>
+              <span>₱{subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Discounts</span>
+              <span>₱{(order.totalDiscount ?? 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-semibold text-base">
               <span>Total</span>

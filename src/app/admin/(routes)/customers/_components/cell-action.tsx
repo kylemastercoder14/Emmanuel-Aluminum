@@ -3,7 +3,6 @@
 import React from "react";
 
 import {
-  EditIcon,
   MoreHorizontal,
   Archive,
   RefreshCcw,
@@ -15,16 +14,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import AlertModal from "@/components/globals/alert-modal";
 import { toast } from "sonner";
-import { Staff } from "@prisma/client";
-import { updateUserStatus } from "@/actions/user";
+import { updateCustomerStatus } from "@/actions/user";
+import { UserWithProps } from '@/types/interface';
 
-const CellAction = ({ data, currentRole }: { data: Staff; currentRole: string; }) => {
+const CellAction = ({ data }: { data: UserWithProps; }) => {
   const router = useRouter();
   const [statusOpen, setStatusOpen] = React.useState({
     toggle: false,
@@ -33,7 +31,7 @@ const CellAction = ({ data, currentRole }: { data: Staff; currentRole: string; }
 
   const onStatusChange = async () => {
     try {
-      const response = await updateUserStatus(data.id, !statusOpen.isActive);
+      const response = await updateCustomerStatus(data.id, !statusOpen.isActive);
       if (response.success) {
         toast.success(response.success);
       } else {
@@ -47,8 +45,6 @@ const CellAction = ({ data, currentRole }: { data: Staff; currentRole: string; }
       setStatusOpen({ ...statusOpen, toggle: false });
     }
   };
-
-  if(currentRole !== "Admin") return null;
   return (
     <>
       <AlertModal
@@ -67,13 +63,6 @@ const CellAction = ({ data, currentRole }: { data: Staff; currentRole: string; }
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => router.push(`/admin/users/${data.id}`)}
-          >
-            <EditIcon className="size-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() =>
               setStatusOpen({ toggle: true, isActive: data.isActive })

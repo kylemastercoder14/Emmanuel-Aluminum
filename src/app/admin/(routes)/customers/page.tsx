@@ -5,18 +5,13 @@ import { DataTable } from "@/components/globals/data-table";
 import { columns } from "./_components/columns";
 
 const Page = async () => {
-  const data = await db.orders.findMany({
-    orderBy: {
-      createdAt: "asc",
-    },
+  const users = await db.user.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
-      user: true,
-      payments: true,
-      orderItems: {
-        include: {
-          service: true,
-        },
-      },
+      orders: true,
+	  address: true,
+	  notifications: true,
+	  conversation: true
     },
   });
 
@@ -24,12 +19,13 @@ const Page = async () => {
     <div>
       <div className="flex items-center justify-between">
         <Heading
-          title="Service History"
-          description="View and manage service history for your system."
+          title="Manage Customers"
+          description="View and manage customer profile for your system."
         />
       </div>
+
       <div className="mt-5">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={users} />
       </div>
     </div>
   );

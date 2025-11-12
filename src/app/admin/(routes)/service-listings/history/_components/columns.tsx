@@ -157,6 +157,31 @@ export const columns: ColumnDef<OrderWithOrderItems>[] = [
     },
   },
   {
+    accessorKey: "isActive",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ChevronsUpDown className="h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const isActive = row.original.isActive;
+      return (
+        <div className="ml-2.5 flex items-center gap-2">
+          <div
+            className={`size-2 mt-0.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
+          ></div>
+          <span>{isActive ? "Active" : "Inactive"}</span>
+        </div>
+      );
+    },
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {

@@ -9,6 +9,7 @@ import {
   IconUsers,
   IconStar,
   IconMessageCircle,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/layout/nav-main";
@@ -76,6 +77,11 @@ const data = {
       url: "/admin/feedbacks",
       icon: IconMessageCircle,
     },
+    {
+      title: "Customer Profile",
+      url: "/admin/customers",
+      icon: IconUsersGroup,
+    },
   ],
   navMainStaff: [
     {
@@ -105,6 +111,11 @@ const data = {
       title: "Project Tracking",
       url: "/admin/project-tracking",
       icon: IconFolders,
+    },
+    {
+      title: "Customer Profile",
+      url: "/admin/customers",
+      icon: IconUsersGroup,
     },
   ],
   navMainCS: [
@@ -141,6 +152,11 @@ const data = {
       title: "Feedbacks",
       url: "/admin/feedbacks",
       icon: IconMessageCircle,
+    },
+    {
+      title: "Customer Profile",
+      url: "/admin/customers",
+      icon: IconUsersGroup,
     },
   ],
 };

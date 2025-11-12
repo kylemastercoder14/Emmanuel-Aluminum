@@ -2,11 +2,7 @@
 
 import React from "react";
 
-import {
-  MoreHorizontal,
-  ArchiveIcon,
-  CircleCheck,
-} from "lucide-react";
+import { MoreHorizontal, ArchiveIcon, CircleCheck, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,19 +17,20 @@ import { useRouter } from "next/navigation";
 import AlertModal from "@/components/globals/alert-modal";
 import { toast } from "sonner";
 import { OrderWithOrderItems } from "@/types/interface";
-import {
-  completeOrderStatus,
-  deleteOrder,
-} from "@/actions/order";
+import { completeOrderStatus } from "@/actions/order";
+import { updateServiceHistoryStatus } from "@/actions/service";
 
 const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState(false);
+  const [activeStatusOpen, setActiveStatusOpen] = React.useState(false);
 
-  const onDelete = async () => {
+  const onStatusActive = async () => {
     try {
-      const response = await deleteOrder(data.id);
+      const response = await updateServiceHistoryStatus(
+        data.id,
+        !data.isActive
+      );
       if (response.success) {
         toast.success(response.success);
       } else {
@@ -41,10 +38,10 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
       }
       router.refresh();
     } catch (error) {
-      toast.error("Failed to delete service request. 😥");
-      console.error("Delete error:", error);
+      toast.error("Failed to change service status. 😥");
+      console.error("Status change error:", error);
     } finally {
-      setDeleteOpen(false);
+      setActiveStatusOpen(false);
     }
   };
 
@@ -67,11 +64,11 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   return (
     <>
       <AlertModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={onDelete}
-        title="Delete Service Request"
-        description="Are you sure you want to delete this service request?"
+        isOpen={activeStatusOpen}
+        onClose={() => setActiveStatusOpen(false)}
+        onConfirm={onStatusActive}
+        title="Change Service History Availability"
+        description={`Are you sure you want to make this service history ${data.isActive ? "unavailable" : "available"}?`}
       />
       <AlertModal
         isOpen={statusOpen}
@@ -94,13 +91,17 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
             Complete Service
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <ArchiveIcon className="size-4 text-destructive" />
-            Delete
-          </DropdownMenuItem>
+          {data.isActive ? (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <ArchiveIcon className="size-4" />
+              Archive
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <RefreshCcw className="size-4" />
+              Retrieve
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

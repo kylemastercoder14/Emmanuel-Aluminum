@@ -7,6 +7,7 @@ const Page = async () => {
   const data = await db.service.findMany({
     where: {
       category: "Window",
+      isAvailable: true
     },
     orderBy: {
       name: "asc",

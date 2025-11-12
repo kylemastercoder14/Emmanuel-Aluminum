@@ -8,6 +8,7 @@ import {
   ArchiveIcon,
   CircleX,
   CircleCheck,
+  RefreshCcw,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
 import { useRouter } from "next/navigation";
 import AlertModal from "@/components/globals/alert-modal";
 import { toast } from "sonner";
-import { deleteQuotation, updateQuotationStatus } from "@/actions/user";
+import { updateQuotationStatus } from "@/actions/user";
 import { Quotation } from "@prisma/client";
 import {
   Dialog,
@@ -32,18 +33,22 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { updateServiceQuotationStatus } from '@/actions/service';
 
 const CellAction = ({ data }: { data: Quotation }) => {
   const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState(false);
   const [approveModalOpen, setApproveModalOpen] = React.useState(false);
   const [estimatedPrice, setEstimatedPrice] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
+  const [activeStatusOpen, setActiveStatusOpen] = React.useState(false);
 
-  const onDelete = async () => {
+  const onStatusActive = async () => {
     try {
-      const response = await deleteQuotation(data.id);
+      const response = await updateServiceQuotationStatus(
+        data.id,
+        !data.isActive
+      );
       if (response.success) {
         toast.success(response.success);
       } else {
@@ -51,10 +56,10 @@ const CellAction = ({ data }: { data: Quotation }) => {
       }
       router.refresh();
     } catch (error) {
-      toast.error("Failed to delete quotation. 😥");
-      console.error("Delete error:", error);
+      toast.error("Failed to change service quotation status. 😥");
+      console.error("Status change error:", error);
     } finally {
-      setDeleteOpen(false);
+      setActiveStatusOpen(false);
     }
   };
 
@@ -121,11 +126,11 @@ const CellAction = ({ data }: { data: Quotation }) => {
   return (
     <>
       <AlertModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={onDelete}
-        title="Delete Quotation"
-        description="Are you sure you want to delete this quotation?"
+        isOpen={activeStatusOpen}
+        onClose={() => setActiveStatusOpen(false)}
+        onConfirm={onStatusActive}
+        title="Change Service Quotation Availability"
+        description={`Are you sure you want to make this service quotation ${data.isActive ? "unavailable" : "available"}?`}
       />
       <AlertModal
         isOpen={statusOpen}
@@ -182,13 +187,17 @@ const CellAction = ({ data }: { data: Quotation }) => {
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <ArchiveIcon className="size-4 text-destructive" />
-            Delete
-          </DropdownMenuItem>
+          {data.isActive ? (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <ArchiveIcon className="size-4" />
+              Archive
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <RefreshCcw className="size-4" />
+              Retrieve
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <Dialog open={approveModalOpen} onOpenChange={setApproveModalOpen}>

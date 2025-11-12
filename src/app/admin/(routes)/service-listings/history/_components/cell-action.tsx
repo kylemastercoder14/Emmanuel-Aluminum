@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -8,6 +10,8 @@ import {
   ArchiveIcon,
   CircleCheck,
   Calendar,
+  RefreshCcw,
+  Wallet,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,25 +29,65 @@ import { toast } from "sonner";
 import { OrderWithOrderItems } from "@/types/interface";
 import {
   completeOrderStatus,
-  deleteOrder,
   scheduleService,
+  verifyPayment,
 } from "@/actions/order";
 import { Modal } from "@/components/globals/modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { updateServiceHistoryStatus } from "@/actions/service";
 
 const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [activeStatusOpen, setActiveStatusOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState(false);
   const [scheduleOpen, setScheduleOpen] = React.useState(false);
   const [scheduledDate, setScheduledDate] = React.useState("");
   const [scheduledTime, setScheduledTime] = React.useState("");
   const [isScheduleLoading, setIsScheduleLoading] = React.useState(false);
+  const [verifyModalOpen, setVerifyModalOpen] = React.useState(false);
+  const [selectedPayment, setSelectedPayment] = React.useState<any>(null);
+  const [verifyAmount, setVerifyAmount] = React.useState<number>(0);
+  const [isVerifying, setIsVerifying] = React.useState(false);
 
-  const onDelete = async () => {
+  const openVerifyModal = (payment: any) => {
+    setSelectedPayment(payment);
+    setVerifyAmount(0);
+    setVerifyModalOpen(true);
+  };
+
+  const onVerifyPayment = async () => {
+    if (!selectedPayment || verifyAmount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+    setIsVerifying(true);
     try {
-      const response = await deleteOrder(data.id);
+      const response = await verifyPayment({
+        paymentId: selectedPayment.id,
+        amount: verifyAmount,
+      });
+      if (response.success) {
+        toast.success(response.message);
+        setVerifyModalOpen(false);
+        router.refresh();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (err) {
+      toast.error("Something went wrong");
+      console.error(err);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const onStatusActive = async () => {
+    try {
+      const response = await updateServiceHistoryStatus(
+        data.id,
+        !data.isActive
+      );
       if (response.success) {
         toast.success(response.success);
       } else {
@@ -51,10 +95,10 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
       }
       router.refresh();
     } catch (error) {
-      toast.error("Failed to delete service request. 😥");
-      console.error("Delete error:", error);
+      toast.error("Failed to change service status. 😥");
+      console.error("Status change error:", error);
     } finally {
-      setDeleteOpen(false);
+      setActiveStatusOpen(false);
     }
   };
 
@@ -103,12 +147,54 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   };
   return (
     <>
+      <Modal
+        isOpen={verifyModalOpen}
+        onClose={() => setVerifyModalOpen(false)}
+        title="Verify Payment"
+        description="View proof of payment and confirm amount received."
+      >
+        {selectedPayment && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              {selectedPayment.attachments.map((url: string) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt="Proof of payment"
+                  className="w-full h-32 object-cover rounded border"
+                />
+              ))}
+            </div>
+            <div className="space-y-2">
+              <Label>Amount Received</Label>
+              <Input
+                type="number"
+                value={verifyAmount}
+                onChange={(e) => setVerifyAmount(parseFloat(e.target.value))}
+                placeholder="Enter received amount"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => setVerifyModalOpen(false)}
+                disabled={isVerifying}
+              >
+                Cancel
+              </Button>
+              <Button onClick={onVerifyPayment} disabled={isVerifying}>
+                {isVerifying ? "Verifying..." : "Confirm Payment"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
       <AlertModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={onDelete}
-        title="Delete Service Request"
-        description="Are you sure you want to delete this service request?"
+        isOpen={activeStatusOpen}
+        onClose={() => setActiveStatusOpen(false)}
+        onConfirm={onStatusActive}
+        title="Change Service History Availability"
+        description={`Are you sure you want to make this service history ${data.isActive ? "unavailable" : "available"}?`}
       />
       <AlertModal
         isOpen={statusOpen}
@@ -178,6 +264,10 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
             <EditIcon className="size-4" />
             View Details
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openVerifyModal(data.payments[0])}>
+            <Wallet className="size-4" />
+            Verify Payment
+          </DropdownMenuItem>
           {data.status === "Pending" || data.status === "Cancelled" ? (
             <DropdownMenuItem onClick={() => setScheduleOpen(true)}>
               <Calendar className="size-4" />
@@ -190,13 +280,17 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <ArchiveIcon className="size-4 text-destructive" />
-            Delete
-          </DropdownMenuItem>
+          {data.isActive ? (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <ArchiveIcon className="size-4" />
+              Archive
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
+              <RefreshCcw className="size-4" />
+              Retrieve
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

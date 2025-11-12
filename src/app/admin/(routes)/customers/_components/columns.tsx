@@ -3,11 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ServiceWithMaterials } from "@/types/interface";
 import CellAction from "./cell-action";
-import Image from "next/image";
+import { UserWithProps } from '@/types/interface';
 
-export const columns: ColumnDef<ServiceWithMaterials>[] = [
+export const columns: ColumnDef<UserWithProps>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -26,111 +25,73 @@ export const columns: ColumnDef<ServiceWithMaterials>[] = [
       return <span className="ml-2.5">{index}</span>;
     },
     filterFn: (row, _, filterValue) => {
-      const service = row.original;
+      const user = row.original;
       const searchText = filterValue.toLowerCase();
+      const fullName = `${user.name.toLowerCase()}`;
 
-      // Type-safe search across all service fields
+      // Type-safe search across all user fields
       const searchFields = [
-        service.name.toLowerCase(),
-        service.id.toLowerCase(),
+        user.email.toLowerCase(),
+        fullName,
+        user.phoneNumber.toLowerCase(),
+        user.id.toLowerCase(),
       ];
 
       return searchFields.some((field) => field.includes(searchText));
     },
   },
   {
-    accessorKey: "service",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Service
+          Name
           <ChevronsUpDown className="h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      return (
-        <div className="flex items-center group gap-2">
-          <div className="relative w-[40px] h-[40px]">
-            <Image
-              className="w-full h-full rounded-md object-contain"
-              fill
-              alt={row.original.name}
-              src={row.original.images[0] || ""}
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="w-[200px] truncate">{row.original.name}</h3>
-            </div>
-            <div
-              title={row.original.category}
-              className="text-xs cursor-pointer text-primary gap-2 flex items-center"
-            >
-              <span className="w-[190px] hover:underline truncate overflow-hidden whitespace-nowrap">
-                Category: {row.original.category}
-              </span>
-            </div>
-          </div>
-        </div>
-      );
+      const fullName = `${row.original.name}`;
+      return <span className="ml-2.5">{fullName}</span>;
     },
   },
   {
-    accessorKey: "colors",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Colors
+          Email
           <ChevronsUpDown className="h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const colors = row.original.colors;
-      return <span className="ml-2.5">{colors.join(", ")}</span>;
+      const email = row.original.email;
+      return <span className="ml-2.5">{email}</span>;
     },
   },
   {
-    accessorKey: "price",
+    accessorKey: "orders",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Price
+          Orders
           <ChevronsUpDown className="h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const price = row.original.price;
-      return <span className="ml-2.5">₱{price.toLocaleString()}</span>;
-    },
-  },
-  {
-    accessorKey: "type",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Type
-          <ChevronsUpDown className="h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const type = row.original.type;
-      return <span className="ml-2.5">{type || "N/A"}</span>;
+      const orders = row.original.orders.length;
+      return <span className="ml-2.5">{orders} {orders <= 1 ? "item" : "items"}</span>;
     },
   },
   {
@@ -147,15 +108,11 @@ export const columns: ColumnDef<ServiceWithMaterials>[] = [
       );
     },
     cell: ({ row }) => {
-      const isActive = row.original.isAvailable;
-      return (
-        <div className="ml-2.5 flex items-center gap-2">
-          <div
-            className={`size-2 mt-0.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}
-          ></div>
-          <span>{isActive ? "Active" : "Inactive"}</span>
-        </div>
-      );
+      const isActive = row.original.isActive;
+      return <div className="ml-2.5 flex items-center gap-2">
+        <div className={`size-2 mt-0.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}></div>
+        <span>{isActive ? "Active" : "Inactive"}</span>
+      </div>;
     },
   },
   {
@@ -166,7 +123,7 @@ export const columns: ColumnDef<ServiceWithMaterials>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Date Added
+          Date Created
           <ChevronsUpDown className="h-4 w-4" />
         </Button>
       );

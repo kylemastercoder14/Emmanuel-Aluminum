@@ -6,6 +6,7 @@ import {
   Notifications,
   OrderItems,
   Orders,
+  Payment,
   Service,
   ServiceRating,
   Staff,
@@ -40,6 +41,7 @@ export interface OrderItemsWithService extends OrderItems {
 export interface OrderWithOrderItems extends Orders {
   orderItems: OrderItemsWithService[];
   user?: User | null;
+  payments: Payment[];
 }
 
 export interface MessageWithProps extends Message {

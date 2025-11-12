@@ -119,3 +119,50 @@ export const updateServiceStatus = async (id: string, isAvailable: boolean) => {
     };
   }
 };
+
+export const updateServiceHistoryStatus = async (
+  id: string,
+  isAvailable: boolean
+) => {
+  try {
+    const service = await db.orders.update({
+      where: { id },
+      data: { isActive: isAvailable },
+    });
+
+    return { success: "Service history status updated successfully", service };
+  } catch (error) {
+    console.error(error);
+    return {
+      error:
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : "Failed to update service history status",
+    };
+  }
+};
+
+export const updateServiceQuotationStatus = async (
+  id: string,
+  isAvailable: boolean
+) => {
+  try {
+    const service = await db.quotation.update({
+      where: { id },
+      data: { isActive: isAvailable },
+    });
+
+    return {
+      success: "Service quotation status updated successfully",
+      service,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      error:
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : "Failed to update service quotation status",
+    };
+  }
+};

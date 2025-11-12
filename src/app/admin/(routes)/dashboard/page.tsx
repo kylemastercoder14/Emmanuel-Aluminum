@@ -3,6 +3,7 @@ import StatCard from "./_components/stat-card";
 import { ServiceChart } from "./_components/service-chart";
 import db from "@/lib/db";
 import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { CustomerChart } from "./_components/customer-chart";
 
 const Page = async () => {
   const now = new Date();
@@ -205,6 +206,43 @@ const Page = async () => {
     });
   }
 
+  const customerChartData = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = startOfMonth(subMonths(now, i));
+    const monthEnd = endOfMonth(subMonths(now, i));
+    const monthLabel = format(monthStart, "MMMM");
+
+    // 🆕 New customers = users created this month
+    const newCustomers = await db.user.count({
+      where: {
+        createdAt: {
+          gte: monthStart,
+          lte: monthEnd,
+        },
+      },
+    });
+
+    // 🔁 Repeating customers = users created before this month but placed orders this month
+    const repeatingCustomers = await db.orders.count({
+      where: {
+        createdAt: {
+          gte: monthStart,
+          lte: monthEnd,
+        },
+        user: {
+          createdAt: { lt: monthStart },
+        },
+      },
+    });
+
+    customerChartData.push({
+      month: monthLabel,
+      newCustomers,
+      repeatingCustomers,
+    });
+  }
+
   return (
     <div>
       <div className="grid lg:grid-cols-4 grid-cols-1 gap-5">
@@ -249,6 +287,9 @@ const Page = async () => {
 
       <div className="mt-5">
         <ServiceChart data={chartData} />
+      </div>
+      <div className="mt-5">
+        <CustomerChart data={customerChartData} />
       </div>
     </div>
   );

@@ -6,8 +6,7 @@ import {
   EditIcon,
   MoreHorizontal,
   ArchiveIcon,
-  CircleX,
-  CircleCheck,
+  RefreshCcw,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,29 +22,11 @@ import { useRouter } from "next/navigation";
 import AlertModal from "@/components/globals/alert-modal";
 import { toast } from "sonner";
 import { ServiceWithMaterials } from "@/types/interface";
-import { deleteService, updateServiceStatus } from "@/actions/service";
+import { updateServiceStatus } from "@/actions/service";
 
 const CellAction = ({ data }: { data: ServiceWithMaterials }) => {
   const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [statusOpen, setStatusOpen] = React.useState(false);
-
-  const onDelete = async () => {
-    try {
-      const response = await deleteService(data.id);
-      if (response.success) {
-        toast.success(response.success);
-      } else {
-        toast.error(response.error);
-      }
-      router.refresh();
-    } catch (error) {
-      toast.error("Failed to delete service. 😥");
-      console.error("Delete error:", error);
-    } finally {
-      setDeleteOpen(false);
-    }
-  };
 
   const onStatus = async () => {
     try {
@@ -65,13 +46,6 @@ const CellAction = ({ data }: { data: ServiceWithMaterials }) => {
   };
   return (
     <>
-      <AlertModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={onDelete}
-        title="Delete Supplier"
-        description="Are you sure you want to delete this service?"
-      />
       <AlertModal
         isOpen={statusOpen}
         onClose={() => setStatusOpen(false)}
@@ -96,25 +70,18 @@ const CellAction = ({ data }: { data: ServiceWithMaterials }) => {
             <EditIcon className="size-4" />
             Edit
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
           {data.isAvailable ? (
             <DropdownMenuItem onClick={() => setStatusOpen(true)}>
-              <CircleX className="size-4" />
-              Unavailable
+              <ArchiveIcon className="size-4" />
+              Archive
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onClick={() => setStatusOpen(true)}>
-              <CircleCheck className="size-4" />
-              Available
+              <RefreshCcw className="size-4" />
+              Retrieve
             </DropdownMenuItem>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <ArchiveIcon className="size-4 text-destructive" />
-            Delete
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>

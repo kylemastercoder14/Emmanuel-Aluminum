@@ -113,6 +113,25 @@ export const updateUserStatus = async (id: string, isActive: boolean) => {
   }
 };
 
+export const updateCustomerStatus = async (id: string, isActive: boolean) => {
+  try {
+    await db.user.update({
+      where: { id },
+      data: { isActive },
+    });
+
+    return { success: "Customer status updated successfully" };
+  } catch (error) {
+    console.error(error);
+    return {
+      error:
+        typeof error === "object" && error !== null && "message" in error
+          ? (error as { message: string }).message
+          : "Failed to update customer status",
+    };
+  }
+};
+
 export const addOrUpdateAddress = async (
   userId: string,
   address: {
