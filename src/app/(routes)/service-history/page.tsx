@@ -14,6 +14,7 @@ const Page = async () => {
       createdAt: "desc",
     },
     include: {
+      payments: true,
       orderItems: {
         include: {
           service: true,
