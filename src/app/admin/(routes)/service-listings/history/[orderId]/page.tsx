@@ -14,6 +14,7 @@ const Page = async (props: {
     },
     include: {
       user: true,
+      payments: true,
       orderItems: {
         include: {
           service: true,
