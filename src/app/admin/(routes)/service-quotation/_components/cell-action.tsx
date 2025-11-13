@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import {
   EditIcon,
   MoreHorizontal,
@@ -33,7 +32,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { updateServiceQuotationStatus } from '@/actions/service';
+import { updateServiceQuotationStatus } from "@/actions/service";
 
 const CellAction = ({ data }: { data: Quotation }) => {
   const router = useRouter();
@@ -42,18 +41,15 @@ const CellAction = ({ data }: { data: Quotation }) => {
   const [estimatedPrice, setEstimatedPrice] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [activeStatusOpen, setActiveStatusOpen] = React.useState(false);
+  const [targetStatus, setTargetStatus] = React.useState<"APPROVED" | "REJECTED" | null>(null);
 
+  // ✅ Toggle service quotation availability
   const onStatusActive = async () => {
     try {
-      const response = await updateServiceQuotationStatus(
-        data.id,
-        !data.isActive
-      );
-      if (response.success) {
-        toast.success(response.success);
-      } else {
-        toast.error(response.error);
-      }
+      const response = await updateServiceQuotationStatus(data.id, !data.isActive);
+      if (response.success) toast.success(response.success);
+      else toast.error(response.error);
+
       router.refresh();
     } catch (error) {
       toast.error("Failed to change service quotation status. 😥");
@@ -63,27 +59,23 @@ const CellAction = ({ data }: { data: Quotation }) => {
     }
   };
 
+  // ✅ Handle approve/reject logic
   const onStatus = async () => {
-    try {
-      const nextStatus =
-        data.status === "PENDING"
-          ? "APPROVED"
-          : data.status === "APPROVED"
-            ? "REJECTED"
-            : "PENDING";
+    if (!targetStatus) return;
 
-      // If approving, require estimated price modal
-      if (data.status === "PENDING" && nextStatus === "APPROVED") {
+    try {
+      // If approving, show estimated price modal first
+      if (targetStatus === "APPROVED") {
         setApproveModalOpen(true);
+        setStatusOpen(false);
         return;
       }
 
-      const response = await updateQuotationStatus(data.id, nextStatus);
-      if (response.success) {
-        toast.success(response.success);
-      } else {
-        toast.error(response.error);
-      }
+      // Otherwise, just reject directly
+      const response = await updateQuotationStatus(data.id, targetStatus);
+      if (response.success) toast.success(response.success);
+      else toast.error(response.error);
+
       router.refresh();
     } catch (error) {
       toast.error("Failed to change quotation status. 😥");
@@ -93,12 +85,14 @@ const CellAction = ({ data }: { data: Quotation }) => {
     }
   };
 
+  // ✅ Approve with estimated price
   const onApproveWithPrice = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!estimatedPrice) {
       toast.error("Please enter the estimated price.");
       return;
     }
+
     setSubmitting(true);
     try {
       const response = await updateQuotationStatus(
@@ -107,11 +101,9 @@ const CellAction = ({ data }: { data: Quotation }) => {
         undefined,
         estimatedPrice
       );
-      if (response.success) {
-        toast.success(response.success);
-      } else {
-        toast.error(response.error);
-      }
+      if (response.success) toast.success(response.success);
+      else toast.error(response.error);
+
       setApproveModalOpen(false);
       setEstimatedPrice("");
       router.refresh();
@@ -125,26 +117,27 @@ const CellAction = ({ data }: { data: Quotation }) => {
 
   return (
     <>
+      {/* 🔹 Confirm service availability change */}
       <AlertModal
         isOpen={activeStatusOpen}
         onClose={() => setActiveStatusOpen(false)}
         onConfirm={onStatusActive}
         title="Change Service Quotation Availability"
-        description={`Are you sure you want to make this service quotation ${data.isActive ? "unavailable" : "available"}?`}
+        description={`Are you sure you want to make this service quotation ${
+          data.isActive ? "unavailable" : "available"
+        }?`}
       />
+
+      {/* 🔹 Confirm approval/rejection */}
       <AlertModal
         isOpen={statusOpen}
         onClose={() => setStatusOpen(false)}
         onConfirm={onStatus}
         title="Change Quotation Status"
-        description={`Are you sure you want to set this quotation to ${
-          data.status === "PENDING"
-            ? "APPROVED"
-            : data.status === "APPROVED"
-              ? "REJECTED"
-              : "PENDING"
-        }?`}
+        description={`Are you sure you want to ${targetStatus?.toLowerCase()} this quotation?`}
       />
+
+      {/* 🔹 Action dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -152,21 +145,35 @@ const CellAction = ({ data }: { data: Quotation }) => {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
           <DropdownMenuItem
             onClick={() => router.push(`/admin/service-quotation/${data.id}`)}
           >
             <EditIcon className="size-4" />
             View Details
           </DropdownMenuItem>
+
           {data.status === "PENDING" && (
             <>
-              <DropdownMenuItem onClick={onStatus}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTargetStatus("APPROVED");
+                  setStatusOpen(true);
+                }}
+              >
                 <CircleCheck className="size-4" />
                 Approve
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusOpen(true)}>
+
+              <DropdownMenuItem
+                onClick={() => {
+                  setTargetStatus("REJECTED");
+                  setStatusOpen(true);
+                }}
+              >
                 <CircleX className="size-4" />
                 Reject
               </DropdownMenuItem>
@@ -186,7 +193,9 @@ const CellAction = ({ data }: { data: Quotation }) => {
               Rejected
             </DropdownMenuItem>
           )}
+
           <DropdownMenuSeparator />
+
           {data.isActive ? (
             <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
               <ArchiveIcon className="size-4" />
@@ -200,6 +209,8 @@ const CellAction = ({ data }: { data: Quotation }) => {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* 🔹 Approve Quotation with Estimated Price */}
       <Dialog open={approveModalOpen} onOpenChange={setApproveModalOpen}>
         <DialogContent>
           <DialogHeader>
