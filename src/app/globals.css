@@ -157,3 +157,26 @@
   height: 100vh;
   position: relative;
 }
+
+.shine-animation {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  transform: translateX(-150%);
+  animation: shineMove 4s ease-in-out infinite;
+}
+
+@keyframes shineMove {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  50% {
+    transform: translateX(150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(150%) skewX(-20deg);
+  }
+}
