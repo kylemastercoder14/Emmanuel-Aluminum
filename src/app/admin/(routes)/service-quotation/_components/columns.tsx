@@ -175,6 +175,12 @@ export const columns: ColumnDef<Quotation>[] = [
               Rejected
             </Badge>
           );
+        case "COMPLETED":
+          return (
+            <Badge className="bg-green-200 ml-2.5 text-green-600 border-green-600 border">
+              Completed
+            </Badge>
+          );
         default:
           return (
             <Badge className="bg-gray-200 ml-2.5 text-gray-600 border-gray-600 border">

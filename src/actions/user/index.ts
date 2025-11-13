@@ -261,7 +261,7 @@ export const deleteQuotation = async (id: string) => {
 
 export const updateQuotationStatus = async (
   id: string,
-  status: "PENDING" | "APPROVED" | "REJECTED",
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED",
   note?: string,
   estimatedPrice?: string | number // may come from form as string
 ) => {

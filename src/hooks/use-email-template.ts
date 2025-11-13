@@ -45,7 +45,7 @@ export const sendQuotationToEmail = async (
   serviceType: string,
   size: string,
   unit: string,
-  status: "PENDING" | "APPROVED" | "REJECTED",
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED",
   note?: string,
   estimatedPrice?: number
 ) => {
@@ -72,14 +72,23 @@ export const sendQuotationToEmail = async (
     PENDING: "Your quotation request has been received",
     APPROVED: "Your quotation has been approved!",
     REJECTED: "Update on your quotation request",
+    COMPLETED: "Your project is now completed — thank you for trusting us!",
   };
 
   const textMessage =
     status === "PENDING"
       ? `Hello ${firstName} ${lastName}, we’ve received your quotation request for ${serviceType} (${size} ${unit}). Our team is reviewing it and will update you soon.`
-      : `Hello ${firstName} ${lastName}, your quotation for ${serviceType} (${size} ${unit}) has been ${status}. ${
-          note ? "Note: " + note : ""
-        }${status === "APPROVED" && estimatedPrice ? ` Estimated Price: ₱${estimatedPrice}` : ""}`;
+      : status === "APPROVED"
+        ? `Hello ${firstName} ${lastName}, great news! Your quotation for ${serviceType} (${size} ${unit}) has been approved.${
+            estimatedPrice ? ` Estimated Price: ₱${estimatedPrice}` : ""
+          }${note ? " Note: " + note : ""}`
+        : status === "REJECTED"
+          ? `Hello ${firstName} ${lastName}, we’re sorry to inform you that your quotation for ${serviceType} (${size} ${unit}) was not approved.${
+              note ? " Reason: " + note : ""
+            }`
+          : `Hello ${firstName} ${lastName}, we’re pleased to let you know that your project for ${serviceType} (${size} ${unit}) has been successfully completed. Thank you for choosing Emmanuel Aluminum Fabrication!${
+              note ? " Note: " + note : ""
+            }`;
 
   const message = {
     from: "aluminumfabricationemmanuel@gmail.com",

@@ -18,7 +18,7 @@ interface QuotationStatusEmailProps {
   serviceType: string;
   size: string;
   unit: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED";
   note?: string;
   estimatedPrice?: number;
 }
@@ -66,6 +66,16 @@ export const QuotationStatusEmail = ({
       extraMessage =
         "If you’d like, you can submit another quotation request with updated details. We’re here to help!";
       break;
+
+    case "COMPLETED":
+      title = "Your project has been successfully completed!";
+      previewText =
+        "Thank you for trusting Emmanuel Aluminum Fabrication — your project is now complete.";
+      headerEmoji = "✅";
+      statusColor = "#2ecc71"; // light green
+      extraMessage =
+        "We’re thrilled to let you know that your project is now finished! Thank you for trusting Emmanuel Aluminum Fabrication. We look forward to working with you again on future projects!";
+      break;
   }
 
   return (
@@ -97,11 +107,15 @@ export const QuotationStatusEmail = ({
                     {status}
                   </span>
                 </Text>
-                {typeof estimatedPrice !== "undefined" && status === "APPROVED" && (
-                  <Text style={detailText}>
-                    <strong>Estimated Price:</strong> ₱{estimatedPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </Text>
-                )}
+                {typeof estimatedPrice !== "undefined" &&
+                  (status === "APPROVED" || status === "COMPLETED") && (
+                    <Text style={detailText}>
+                      <strong>Estimated Price:</strong> ₱
+                      {estimatedPrice?.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </Text>
+                  )}
                 {note && (
                   <Text style={detailText}>
                     <strong>Note from staff:</strong> {note}
@@ -124,7 +138,7 @@ export const QuotationStatusEmail = ({
 
           <Text style={footerText}>
             This message was produced and distributed by Emmanuel Aluminum
-            Fabrication. © 2025, Emmanuel Aluminum Fabrication, Inc.. All rights
+            Fabrication. © 2025, Emmanuel Aluminum Fabrication, Inc. All rights
             reserved. Emmanuel Aluminum Fabrication is a registered trademark of{" "}
             <Link
               href="https://emmanuel-aluminum.com"

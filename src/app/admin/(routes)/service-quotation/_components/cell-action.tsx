@@ -8,6 +8,7 @@ import {
   CircleX,
   CircleCheck,
   RefreshCcw,
+  CheckCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,9 @@ const CellAction = ({ data }: { data: Quotation }) => {
   const [estimatedPrice, setEstimatedPrice] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [activeStatusOpen, setActiveStatusOpen] = React.useState(false);
-  const [targetStatus, setTargetStatus] = React.useState<"APPROVED" | "REJECTED" | null>(null);
+  const [targetStatus, setTargetStatus] = React.useState<
+    "APPROVED" | "REJECTED" | "COMPLETED" | null
+  >(null);
 
   // ✅ Toggle service quotation availability
   const onStatusActive = async () => {
@@ -59,7 +62,7 @@ const CellAction = ({ data }: { data: Quotation }) => {
     }
   };
 
-  // ✅ Handle approve/reject logic
+  // ✅ Handle status change (approve, reject, complete)
   const onStatus = async () => {
     if (!targetStatus) return;
 
@@ -71,7 +74,7 @@ const CellAction = ({ data }: { data: Quotation }) => {
         return;
       }
 
-      // Otherwise, just reject directly
+      // Otherwise (reject or complete), process directly
       const response = await updateQuotationStatus(data.id, targetStatus);
       if (response.success) toast.success(response.success);
       else toast.error(response.error);
@@ -128,7 +131,7 @@ const CellAction = ({ data }: { data: Quotation }) => {
         }?`}
       />
 
-      {/* 🔹 Confirm approval/rejection */}
+      {/* 🔹 Confirm approval/rejection/completion */}
       <AlertModal
         isOpen={statusOpen}
         onClose={() => setStatusOpen(false)}
@@ -156,6 +159,7 @@ const CellAction = ({ data }: { data: Quotation }) => {
             View Details
           </DropdownMenuItem>
 
+          {/* Pending → Approve / Reject */}
           {data.status === "PENDING" && (
             <>
               <DropdownMenuItem
@@ -180,22 +184,40 @@ const CellAction = ({ data }: { data: Quotation }) => {
             </>
           )}
 
+          {/* Approved → Mark as Completed */}
           {data.status === "APPROVED" && (
+            <>
+              <DropdownMenuItem
+                onClick={() => {
+                  setTargetStatus("COMPLETED");
+                  setStatusOpen(true);
+                }}
+              >
+                <CheckCircle className="size-4" />
+                Mark as Completed
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {/* Completed → Disabled */}
+          {data.status === "COMPLETED" && (
             <DropdownMenuItem disabled>
-              <CircleCheck className="size-4" />
-              Approved
+              <CheckCircle className="size-4 text-green-500" />
+              Completed
             </DropdownMenuItem>
           )}
 
+          {/* Rejected → Disabled */}
           {data.status === "REJECTED" && (
             <DropdownMenuItem disabled>
-              <CircleX className="size-4" />
+              <CircleX className="size-4 text-red-500" />
               Rejected
             </DropdownMenuItem>
           )}
 
           <DropdownMenuSeparator />
 
+          {/* Archive / Retrieve */}
           {data.isActive ? (
             <DropdownMenuItem onClick={() => setActiveStatusOpen(true)}>
               <ArchiveIcon className="size-4" />
