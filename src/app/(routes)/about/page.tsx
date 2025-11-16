@@ -13,7 +13,7 @@ const features = [
 
 const Features06Page = () => {
   return (
-    <div className="min-h-screen lg:pt-0 pt-20 lg:px-0 px-6 flex items-center justify-center">
+    <div className="min-h-screen lg:px-0 px-6 flex items-center justify-center py-16">
       <div className="max-w-7xl w-full py-10">
         <h2 className="text-4xl md:text-[2.75rem] md:leading-[1.2] font-semibold tracking-[-0.03em] sm:max-w-xl text-pretty sm:mx-auto sm:text-center">
           Know more about us

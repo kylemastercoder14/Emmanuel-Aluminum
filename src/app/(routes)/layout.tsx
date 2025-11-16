@@ -21,9 +21,11 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
   const conversationId = user?.conversation?.[0]?.id ?? null;
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar orderCount={orderCount} user={user} />
-      {children}
+      <main className="flex-1 pt-20 md:pt-20">
+        {children}
+      </main>
       {/* Footer Section */}
       <Footer />
       {userId && (

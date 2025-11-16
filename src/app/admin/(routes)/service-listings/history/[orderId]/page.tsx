@@ -13,7 +13,11 @@ const Page = async (props: {
       id: params.orderId,
     },
     include: {
-      user: true,
+      user: {
+        include: {
+          address: true,
+        },
+      },
       payments: true,
       orderItems: {
         include: {

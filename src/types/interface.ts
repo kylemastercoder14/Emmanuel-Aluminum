@@ -40,7 +40,7 @@ export interface OrderItemsWithService extends OrderItems {
 
 export interface OrderWithOrderItems extends Orders {
   orderItems: OrderItemsWithService[];
-  user?: User | null;
+  user?: UserWithProps | null;
   payments: Payment[];
 }
 

@@ -9,11 +9,19 @@ import { toast } from "sonner";
 
 const CartPage = () => {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, removeAll, setSelectedForCheckout } =
-    useCart();
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    removeAll,
+    setSelectedForCheckout,
+  } = useCart();
+  const [selectedItems, setSelectedItems] = useState<{ id: string; color: string }[]>([]);
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   const handleQuantityChange = (id: string, color: string, qty: number) => {
     if (qty < 1) return;
@@ -21,23 +29,26 @@ const CartPage = () => {
   };
 
   const toggleSelect = (id: string, color: string) => {
-    const key = `${id}-${color}`;
-    setSelectedItems((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+    setSelectedItems((prev) => {
+      const exists = prev.some((item) => item.id === id && item.color === color);
+      if (exists) {
+        return prev.filter((item) => !(item.id === id && item.color === color));
+      }
+      return [...prev, { id, color }];
+    });
   };
 
   const handleDeleteSelected = () => {
-    selectedItems.forEach((key) => {
-      const [id, color] = key.split("-");
+    selectedItems.forEach(({ id, color }) => {
       removeItem(id, color);
     });
+
     setSelectedItems([]);
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedItems(items.map((i) => `${i.id}-${i.color}`));
+      setSelectedItems(items.map((i) => ({ id: i.id, color: i.color })));
     } else {
       setSelectedItems([]);
     }
@@ -49,7 +60,7 @@ const CartPage = () => {
       return;
     }
     const checkoutItems = items.filter((i) =>
-      selectedItems.includes(`${i.id}-${i.color}`)
+      selectedItems.some((selected) => selected.id === i.id && selected.color === i.color)
     );
     setSelectedForCheckout(checkoutItems);
     router.push("/submit-request");
@@ -71,9 +82,14 @@ const CartPage = () => {
 
       {/* Items */}
       {items.length === 0 ? (
-        <div className="py-10 text-center text-gray-500">Your cart is empty 🛒</div>
+        <div className="py-10 text-center text-gray-500">
+          Your cart is empty 🛒
+        </div>
       ) : (
         items.map((item) => {
+          const isSelected = selectedItems.some(
+            (selected) => selected.id === item.id && selected.color === item.color
+          );
           const key = `${item.id}-${item.color}`;
           return (
             <div
@@ -84,7 +100,7 @@ const CartPage = () => {
               <div className="flex items-center md:justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedItems.includes(key)}
+                  checked={isSelected}
                   onChange={() => toggleSelect(item.id, item.color)}
                   className="w-4 h-4 accent-green-600"
                 />
@@ -100,8 +116,12 @@ const CartPage = () => {
                   className="rounded border"
                 />
                 <div>
-                  <p className="font-medium text-sm sm:text-base">{item.name}</p>
-                  <p className="text-xs sm:text-sm text-gray-500">{item.color}</p>
+                  <p className="font-medium text-sm sm:text-base">
+                    {item.name}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    {item.color}
+                  </p>
                   <button
                     onClick={() => removeItem(item.id, item.color)}
                     className="flex items-center text-red-500 text-xs sm:text-sm mt-1"
@@ -112,7 +132,9 @@ const CartPage = () => {
               </div>
 
               {/* Price */}
-              <span className="text-sm sm:text-base">₱{item.price.toLocaleString()}</span>
+              <span className="text-sm sm:text-base">
+                ₱{item.price.toLocaleString()}
+              </span>
 
               {/* Quantity */}
               <div className="flex items-center justify-end gap-2">
@@ -149,7 +171,16 @@ const CartPage = () => {
               <input
                 type="checkbox"
                 className="w-4 h-4 accent-green-600"
-                checked={selectedItems.length === items.length}
+                checked={
+                  items.length > 0 &&
+                  selectedItems.length === items.length &&
+                  items.every((item) =>
+                    selectedItems.some(
+                      (selected) =>
+                        selected.id === item.id && selected.color === item.color
+                    )
+                  )
+                }
                 onChange={(e) => handleSelectAll(e.target.checked)}
               />
               <span className="text-sm">Select all</span>
@@ -157,7 +188,11 @@ const CartPage = () => {
 
             <div className="flex flex-col sm:flex-row gap-2">
               {selectedItems.length > 0 && (
-                <Button size="sm" variant="destructive" onClick={handleDeleteSelected}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleDeleteSelected}
+                >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete Selected
                 </Button>

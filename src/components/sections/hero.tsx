@@ -8,18 +8,18 @@ const Hero = () => {
   const router = useRouter();
 
   return (
-    <div className="w-full relative bg-hero bg-cover bg-center">
-      {/* Left Sidebar Overlay */}
-      <div className="bg-navbar h-full absolute top-0 left-0 w-[25%]"></div>
+    <div className="w-full relative bg-hero bg-cover bg-center min-h-screen">
+      {/* Left Sidebar Overlay (desktop only) */}
+      <div className="hidden md:block bg-navbar h-full absolute top-0 left-0 w-1/4 max-w-xs"></div>
 
       {/* Global dark overlay for contrast */}
       <div className="absolute inset-0 bg-black/40"></div>
 
       {/* Hero Content */}
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between px-32 h-screen">
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-16 xl:px-32 py-24 md:py-32 gap-10">
         {/* Left Text Section */}
         <div className="flex flex-col items-start justify-center max-w-xl space-y-6">
-          <h1 className="text-5xl font-bold text-white leading-tight drop-shadow-xl">
+          <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow-xl">
             We Are the Best in Aluminum & Glass <br /> Fabrication Services
           </h1>
 

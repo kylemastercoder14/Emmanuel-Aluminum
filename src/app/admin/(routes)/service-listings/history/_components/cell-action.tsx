@@ -12,6 +12,8 @@ import {
   Calendar,
   RefreshCcw,
   Wallet,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -49,12 +51,90 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   const [selectedPayment, setSelectedPayment] = React.useState<any>(null);
   const [verifyAmount, setVerifyAmount] = React.useState<number>(0);
   const [isVerifying, setIsVerifying] = React.useState(false);
+  const [zoomImage, setZoomImage] = React.useState<string | null>(null);
+  const [zoomLevel, setZoomLevel] = React.useState<number>(1);
+  const [pan, setPan] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = React.useState(false);
+  const panStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
   const openVerifyModal = (payment: any) => {
     setSelectedPayment(payment);
     setVerifyAmount(0);
     setVerifyModalOpen(true);
   };
+
+  const openZoomModal = (url: string) => {
+    setZoomImage(url);
+    setZoomLevel(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - 0.25, 0.5));
+  };
+
+  const handleZoomReset = () => {
+    setZoomLevel(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleWheelZoom = (event: React.WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const delta = event.deltaY;
+    setZoomLevel((prev) => {
+      const step = delta > 0 ? -0.25 : 0.25;
+      const next = prev + step;
+      return Math.min(Math.max(next, 0.5), 3);
+    });
+  };
+
+  const handlePanStart = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsPanning(true);
+    panStartRef.current = {
+      x: event.clientX - pan.x,
+      y: event.clientY - pan.y,
+    };
+  };
+
+  const handlePanMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isPanning || !panStartRef.current) return;
+    setPan({
+      x: event.clientX - panStartRef.current.x,
+      y: event.clientY - panStartRef.current.y,
+    });
+  };
+
+  const handlePanEnd = () => {
+    setIsPanning(false);
+    panStartRef.current = null;
+  };
+
+  React.useEffect(() => {
+    if (!zoomImage) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "+" || event.key === "=") {
+        event.preventDefault();
+        handleZoomIn();
+      }
+      if (event.key === "-") {
+        event.preventDefault();
+        handleZoomOut();
+      }
+      if (event.key === "0") {
+        event.preventDefault();
+        handleZoomReset();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [zoomImage]);
 
   const onVerifyPayment = async () => {
     if (!selectedPayment || verifyAmount <= 0) {
@@ -151,6 +231,7 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
         isOpen={verifyModalOpen}
         onClose={() => setVerifyModalOpen(false)}
         title="Verify Payment"
+        className='max-w-4xl!'
         description="View proof of payment and confirm amount received."
       >
         {selectedPayment && (
@@ -161,7 +242,8 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
                   key={url}
                   src={url}
                   alt="Proof of payment"
-                  className="w-full h-32 object-cover rounded border"
+                  className="w-full h-80 object-contain rounded border cursor-zoom-in"
+                  onClick={() => openZoomModal(url)}
                 />
               ))}
             </div>
@@ -185,6 +267,66 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
               <Button onClick={onVerifyPayment} disabled={isVerifying}>
                 {isVerifying ? "Verifying..." : "Confirm Payment"}
               </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      <Modal
+        isOpen={!!zoomImage}
+        onClose={() => setZoomImage(null)}
+        title="Preview Attachment"
+        className='max-w-3xl!'
+        description="Zoom in and out to inspect the proof of payment."
+      >
+        {zoomImage && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={handleZoomOut}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleZoomReset}
+              >
+                Reset
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={handleZoomIn}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </div>
+            <div
+              className="max-h-[70vh] overflow-auto flex justify-center"
+              onWheel={handleWheelZoom}
+            >
+              <div
+                className="inline-block cursor-grab active:cursor-grabbing"
+                style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoomLevel})`,
+                  transformOrigin: "center center",
+                }}
+                onMouseDown={handlePanStart}
+                onMouseMove={handlePanMove}
+                onMouseUp={handlePanEnd}
+                onMouseLeave={handlePanEnd}
+              >
+                <img
+                  src={zoomImage}
+                  alt="Proof of payment zoomed"
+                  className="max-h-[70vh] object-contain rounded border"
+                />
+              </div>
             </div>
           </div>
         )}

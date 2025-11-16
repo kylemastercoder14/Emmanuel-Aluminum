@@ -16,6 +16,8 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
   const router = useRouter();
   if (!order) return <p>No order found.</p>;
 
+  const primaryAddress = order.user?.address?.[0];
+
   // Compute subtotal (sum of item.price * quantity)
   const subtotal = order.orderItems.reduce(
     (sum, item) => sum + Number(item.unitPrice) * Number(item.quantity),
@@ -87,6 +89,16 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ order }) => {
             <p>Name: {order.user?.name}</p>
             <p>Email: {order.user?.email}</p>
             <p>Phone: {order.user?.phoneNumber}</p>
+            {primaryAddress ? (
+              <div className="mt-3 text-sm space-y-0.5">
+                <p className="font-semibold">Address</p>
+                <p>{primaryAddress.fullName}</p>
+                <p>{primaryAddress.phoneNumber}</p>
+                <p>{primaryAddress.address}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-gray-500">No address on file</p>
+            )}
           </div>
         </div>
 
