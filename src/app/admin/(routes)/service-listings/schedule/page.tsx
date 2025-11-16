@@ -6,35 +6,46 @@ import { columns } from "./_components/columns";
 
 const Page = async () => {
   const data = await db.orders.findMany({
-	where: {
-		status: "Scheduled"
-	},
-	orderBy: {
-	  createdAt: "asc",
-	},
-	include: {
-	  user: true,
-	  payments: true,
-	  orderItems: {
-		include: {
-		  service: true,
-		},
-	  },
-	},
+    where: {
+      status: "Scheduled",
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    include: {
+      user: {
+        include: {
+          address: true,
+          orders: true,
+          notifications: true,
+          conversation: true,
+        },
+      },
+      payments: true,
+      orderItems: {
+        include: {
+          service: {
+            include: {
+              serviceRatings: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return (
-	<div>
-	  <div className="flex items-center justify-between">
-		<Heading
-		  title="Service Schedule"
-		  description="View and manage service schedule for your system."
-		/>
-	  </div>
-	  <div className="mt-5">
-		<DataTable columns={columns} data={data} />
-	  </div>
-	</div>
+    <div>
+      <div className="flex items-center justify-between">
+        <Heading
+          title="Service Schedule"
+          description="View and manage service schedule for your system."
+        />
+      </div>
+      <div className="mt-5">
+        <DataTable columns={columns} data={data} />
+      </div>
+    </div>
   );
 };
 
