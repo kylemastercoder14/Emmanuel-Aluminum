@@ -21,7 +21,7 @@ const Page = () => {
         </div>
       </div>
       {/* Form Section */}
-      <div className="relative z-10 flex items-center justify-center md:justify-end md:pr-30 h-full py-10">
+      <div className="relative z-10 flex items-center justify-center md:justify-end md:pr-5 h-full py-10">
         <div className="p-6 md:p-8 max-w-sm md:max-w-lg w-full bg-white/80 md:bg-transparent rounded-2xl md:rounded-none shadow md:shadow-none backdrop-blur-sm md:backdrop-blur-none">
           <h2 className="text-2xl md:text-3xl tracking-wider font-medium text-black font-serif mb-4 text-center">
             Email verification

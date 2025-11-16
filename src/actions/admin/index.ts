@@ -2,10 +2,35 @@
 "use server";
 
 import z from "zod";
-import { adminSchema } from "@/validators/admin";
+import { adminSchema, adminProfileSchema, adminPasswordSchema } from "@/validators/admin";
 import * as jose from "jose";
 import { cookies } from "next/headers";
 import db from "@/lib/db";
+import jwt from "jsonwebtoken";
+
+const getCurrentStaff = async () => {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("Authorization");
+
+  if (!authToken) return null;
+
+  try {
+    const decodedToken = jwt.verify(authToken.value, process.env.JWT_SECRET!) as {
+      sub: string;
+    };
+
+    const staffId = decodedToken.sub;
+
+    const staff = await db.staff.findUnique({
+      where: { id: staffId },
+    });
+
+    return staff;
+  } catch (error) {
+    console.error("Error decoding staff token", error);
+    return null;
+  }
+};
 
 export const signIn = async (values: z.infer<typeof adminSchema>) => {
   const validatedField = adminSchema.safeParse(values);
@@ -60,4 +85,80 @@ export const signIn = async (values: z.infer<typeof adminSchema>) => {
       error: `Failed to log in user. Please try again. ${error.message || ""}`,
     };
   }
+};
+
+export const updateStaffProfile = async (
+  values: z.infer<typeof adminProfileSchema>
+) => {
+  const validated = adminProfileSchema.safeParse(values);
+
+  if (!validated.success) {
+    const errors = validated.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const staff = await getCurrentStaff();
+
+  if (!staff) {
+    return { error: "Unauthorized" };
+  }
+
+  const { firstName, lastName, username, phoneNumber, image } = validated.data;
+
+  // Ensure username is unique across staff (excluding current)
+  const existingWithUsername = await db.staff.findFirst({
+    where: {
+      username,
+      NOT: { id: staff.id },
+    },
+  });
+
+  if (existingWithUsername) {
+    return { error: "Username is already taken" };
+  }
+
+  await db.staff.update({
+    where: { id: staff.id },
+    data: {
+      firstName,
+      lastName,
+      username,
+      phoneNumber,
+      image: image || null,
+    },
+  });
+
+  return { success: "Profile updated successfully" };
+};
+
+export const updateStaffPassword = async (
+  values: z.infer<typeof adminPasswordSchema>
+) => {
+  const validated = adminPasswordSchema.safeParse(values);
+
+  if (!validated.success) {
+    const errors = validated.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const staff = await getCurrentStaff();
+
+  if (!staff) {
+    return { error: "Unauthorized" };
+  }
+
+  const { currentPassword, newPassword } = validated.data;
+
+  if (staff.password !== currentPassword) {
+    return { error: "Current password is incorrect" };
+  }
+
+  await db.staff.update({
+    where: { id: staff.id },
+    data: {
+      password: newPassword,
+    },
+  });
+
+  return { success: "Password updated successfully" };
 };
