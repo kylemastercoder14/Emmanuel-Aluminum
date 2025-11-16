@@ -16,12 +16,19 @@ const Page = async (props: {
       user: {
         include: {
           address: true,
+          orders: true,
+          notifications: true,
+          conversation: true,
         },
       },
       payments: true,
       orderItems: {
         include: {
-          service: true,
+          service: {
+            include: {
+              serviceRatings: true,
+            },
+          },
         },
       },
     },
