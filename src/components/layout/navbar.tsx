@@ -8,7 +8,7 @@ import CartHeader from "@/components/globals/cart-header";
 import OrderHeader from "@/components/globals/order-header";
 import { toast } from "sonner";
 import { signOut } from "@/actions/auth";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 const Navbar = ({ user, orderCount }: { user: any; orderCount: number }) => {
   const [open, setOpen] = useState(false);
@@ -56,6 +56,12 @@ const Navbar = ({ user, orderCount }: { user: any; orderCount: number }) => {
 
           {user ? (
             <div className="flex items-center space-x-6">
+              <Link
+                href="/profile"
+                className="text-white hover:text-gray-200 font-medium transition-colors"
+              >
+                Manage your profile &amp; password
+              </Link>
               <Link
                 href="/notifications"
                 className="text-white hover:text-gray-200 relative font-medium transition-colors"

@@ -36,8 +36,23 @@ export const createTask = async (
         endDate: validatedFields.endDate,
         status: validatedFields.status,
         priority: validatedFields.priority,
+        customerId: validatedFields.customerId,
+        orderId: validatedFields.orderId,
       },
     });
+
+    // Notify the customer about the new task
+    if (validatedFields.customerId) {
+      await db.notifications.create({
+        data: {
+          userId: validatedFields.customerId,
+          title: `New task created: ${validatedFields.subject}`,
+          message: `Task "${validatedFields.subject}" is scheduled from ${
+            selectedDate ?? validatedFields.startDate
+          } to ${validatedFields.endDate}. Status: ${validatedFields.status}.`,
+        },
+      });
+    }
 
     return { success: "Task created successfully", data: task };
   } catch (error) {
@@ -79,6 +94,20 @@ export const updateTask = async (
         priority: validatedFields.priority,
       },
     });
+
+    // Notify the customer about the task update
+    if (validatedFields.customerId) {
+      await db.notifications.create({
+        data: {
+          userId: validatedFields.customerId,
+          title: `Task updated: ${validatedFields.subject}`,
+          message: `Task "${validatedFields.subject}" has been updated.
+            From: ${selectedDate ?? validatedFields.startDate}
+            To: ${validatedFields.endDate}
+            Status: ${validatedFields.status}.`,
+        },
+      });
+    }
 
     return { success: "Task updated successfully", data: task };
   } catch (error) {

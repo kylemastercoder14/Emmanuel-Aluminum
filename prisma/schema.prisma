@@ -28,6 +28,7 @@ model User {
   report         Report[]
   serviceRatings ServiceRating[]
   feedback       Feedback[]
+  tasks          Task[]
 }
 
 model Address {
@@ -115,6 +116,13 @@ model Task {
   endDate   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // New relations for project tracking
+  customerId String?
+  customer   User?   @relation(fields: [customerId], references: [id])
+
+  orderId String?
+  order   Orders? @relation(fields: [orderId], references: [id])
 }
 
 model Orders {
@@ -122,9 +130,9 @@ model Orders {
   orderId           String   @unique
   status            String   @default("Pending") // Pending, Scheduled, Completed, Cancelled
   paymentStatus     String   @default("Pending") // Pending, Paid, Failed, Partial
-  paymentAttachment String[] @default([])        // aggregated attachments (all attachments)
+  paymentAttachment String[] @default([]) // aggregated attachments (all attachments)
   totalAmount       Float
-  paidAmount        Float   @default(0)          // <-- NEW: how much has been paid so far
+  paidAmount        Float    @default(0) // <-- NEW: how much has been paid so far
   totalDiscount     Float?
   paymentMethod     String
   isSeniorOrPwd     Boolean  @default(false)
@@ -143,6 +151,7 @@ model Orders {
 
   orderItems OrderItems[]
   payments   Payment[] // relation to Payment table
+  tasks      Task[]
 }
 
 model Payment {
@@ -150,8 +159,8 @@ model Payment {
   orderId     String
   order       Orders   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   amount      Float
-  attachments String[] @default([])   // one or more proof files (urls)
-  note        String?                 // optional note (e.g. "down payment")
+  attachments String[] @default([]) // one or more proof files (urls)
+  note        String? // optional note (e.g. "down payment")
   createdAt   DateTime @default(now())
 }
 

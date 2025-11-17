@@ -3,15 +3,18 @@
 
 import z from "zod";
 import {
+  changePasswordSchema,
   emailVerificationSchema,
   loginSchema,
   registerSchema,
+  updateProfileSchema,
 } from "@/validators/auth";
 import db from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import * as jose from "jose";
 import { cookies } from "next/headers";
 import { sendAccountToEmail } from "@/hooks/use-email-template";
+import { getUserIdFromToken } from "@/lib/auth";
 
 export const signUp = async (values: z.infer<typeof registerSchema>) => {
   const validatedField = registerSchema.safeParse(values);
@@ -200,6 +203,109 @@ export const signIn = async (values: z.infer<typeof loginSchema>) => {
     console.error("Error logging in user", error);
     return {
       error: `Failed to log in user. Please try again. ${error.message || ""}`,
+    };
+  }
+};
+
+export const updateProfile = async (
+  values: z.infer<typeof updateProfileSchema>
+) => {
+  const validatedField = updateProfileSchema.safeParse(values);
+
+  if (!validatedField.success) {
+    const errors = validatedField.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const userId = await getUserIdFromToken();
+
+  if (!userId) {
+    return { error: "Unauthorized" };
+  }
+
+  const { name, phoneNumber, email } = validatedField.data;
+
+  try {
+    // ensure email is unique if changed
+    const existingUserWithEmail = await db.user.findFirst({
+      where: {
+        email,
+        id: { not: userId },
+      },
+    });
+
+    if (existingUserWithEmail) {
+      return { error: "Email is already in use" };
+    }
+
+    const updatedUser = await db.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        phoneNumber,
+        email,
+      },
+    });
+
+    return { success: "Profile updated successfully", data: updatedUser };
+  } catch (error: any) {
+    console.error("Error updating profile", error);
+    return {
+      error: `Failed to update profile. Please try again. ${error.message || ""}`,
+    };
+  }
+};
+
+export const changePassword = async (
+  values: z.infer<typeof changePasswordSchema>
+) => {
+  const validatedField = changePasswordSchema.safeParse(values);
+
+  if (!validatedField.success) {
+    const errors = validatedField.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const userId = await getUserIdFromToken();
+
+  if (!userId) {
+    return { error: "Unauthorized" };
+  }
+
+  const { currentPassword, newPassword } = validatedField.data;
+
+  try {
+    const user = await db.user.findFirst({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return { error: "User not found." };
+    }
+
+    const isPasswordValid = await bcryptjs.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      return { error: "Current password is incorrect" };
+    }
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return { success: "Password updated successfully" };
+  } catch (error: any) {
+    console.error("Error changing password", error);
+    return {
+      error: `Failed to change password. Please try again. ${error.message || ""}`,
     };
   }
 };

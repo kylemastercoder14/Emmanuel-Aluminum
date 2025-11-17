@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Task } from "@prisma/client";
+import { Orders, Task, User } from "@prisma/client";
 import { Modal } from "@/components/globals/modal";
 import ViewTask from "./view-task-modal";
 import TaskForm from "@/components/forms/task";
@@ -14,17 +14,25 @@ import { registerLicense } from "@syncfusion/ej2-base";
 
 registerLicense(process.env.NEXT_PUBLIC_SYNCFUSION_LICENSE_KEY!);
 
+type ScheduledOrder = Orders & { user: User };
+type Customer = User;
+type TaskWithRelations = Task & { customer: User | null; order: Orders | null };
+
 const CalendarWrapper = ({
   tasks,
   currentRole,
+  scheduledOrders,
+  customers,
 }: {
-  tasks: Task[];
+  tasks: TaskWithRelations[];
   currentRole: string;
+  scheduledOrders: ScheduledOrder[];
+  customers: Customer[];
 }) => {
   const router = useRouter();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [formModalOpen, setFormModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const isAdmin = currentRole === "Admin";
@@ -80,6 +88,7 @@ const CalendarWrapper = ({
       {/* Create / Update Form Modal */}
       {(isAdmin || isStaff) && (
         <Modal
+        className='max-w-5xl!'
           isOpen={formModalOpen}
           onClose={() => {
             setFormModalOpen(false);
@@ -98,6 +107,8 @@ const CalendarWrapper = ({
               setSelectedDate(null);
               setSelectedTask(null);
             }}
+            scheduledOrders={scheduledOrders}
+            customers={customers}
           />
         </Modal>
       )}

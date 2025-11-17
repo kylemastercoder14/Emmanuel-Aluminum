@@ -1,23 +1,17 @@
-import Image from "next/image";
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from "react";
+import { redirect } from "next/navigation";
+import { useUser } from "@/hooks/use-user";
+import ProfileClient from "./client";
 
-const Page = () => {
-  return (
-	<div className="flex items-center justify-center flex-col min-h-screen">
-	  <Image
-		src="/under-construction.svg"
-		alt="Under Construction"
-		width={600}
-		height={600}
-	  />
-	  <h3 className="text-2xl font-bold mt-3">
-		This page is under construction
-	  </h3>
-	  <p className="text-muted-foreground mt-2">
-		We&apos;re working hard to bring you this page. Stay tuned!
-	  </p>
-	</div>
-  );
+const Page = async () => {
+  const { user } = await useUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  return <ProfileClient user={user} />;
 };
 
 export default Page;

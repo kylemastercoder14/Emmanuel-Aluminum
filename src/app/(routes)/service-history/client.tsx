@@ -229,7 +229,7 @@ const OrderHistoryPage = ({ orders }: { orders: OrderWithOrderItems[] }) => {
 
               {/* Actions */}
               <div className="flex flex-col md:flex-row text-left md:text-right gap-2 md:justify-end">
-                {order.status !== "Cancelled" && (
+                {(order.status === "Completed" || order.status === "Scheduled") && (
                   <Button
                     size="sm"
                     variant="ghost"

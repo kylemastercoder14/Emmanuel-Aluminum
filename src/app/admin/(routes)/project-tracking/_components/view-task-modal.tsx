@@ -1,6 +1,6 @@
 "use client";
 
-import { Task } from "@prisma/client";
+import { Orders, Task, User } from "@prisma/client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +23,15 @@ function formatDateTime(date: Date | string) {
   });
 }
 
+type TaskWithRelations = Task & { customer: User | null; order: Orders | null };
+
 const ViewTask = ({
   data,
   onEdit,
   onDelete,
   currentRole,
 }: {
-  data: Task;
+  data: TaskWithRelations;
   onEdit: () => void;
   onDelete: () => void;
   currentRole: string;
@@ -57,6 +59,27 @@ const ViewTask = ({
         <IconFileText className="size-4" />
         <span>{data.status}</span>
       </div>
+
+      {/* Customer */}
+      {data.customer && (
+        <div className="flex items-center gap-2 mt-3">
+          <IconFileText className="size-4" />
+          <span>
+            Customer: <strong>{data.customer.name}</strong> ({data.customer.email})
+          </span>
+        </div>
+      )}
+
+      {/* Order */}
+      {data.order && (
+        <div className="flex items-center gap-2 mt-3">
+          <IconFileText className="size-4" />
+          <span>
+            Order: <strong>{data.order.orderId}</strong> — ₱
+            {data.order.totalAmount.toLocaleString()}
+          </span>
+        </div>
+      )}
 
       {/* Priority */}
       <div className="flex items-center gap-2 mt-3">

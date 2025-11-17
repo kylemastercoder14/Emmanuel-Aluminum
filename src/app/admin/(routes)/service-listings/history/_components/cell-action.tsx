@@ -14,6 +14,7 @@ import {
   Wallet,
   ZoomIn,
   ZoomOut,
+  BarChart3,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import { Modal } from "@/components/globals/modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { updateServiceHistoryStatus } from "@/actions/service";
+import { Progress } from "@/components/ui/progress";
 
 const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   const router = useRouter();
@@ -48,6 +50,7 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   const [scheduledTime, setScheduledTime] = React.useState("");
   const [isScheduleLoading, setIsScheduleLoading] = React.useState(false);
   const [verifyModalOpen, setVerifyModalOpen] = React.useState(false);
+  const [paymentTrackingOpen, setPaymentTrackingOpen] = React.useState(false);
   const [selectedPayment, setSelectedPayment] = React.useState<any>(null);
   const [verifyAmount, setVerifyAmount] = React.useState<number>(0);
   const [isVerifying, setIsVerifying] = React.useState(false);
@@ -113,6 +116,11 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
     setIsPanning(false);
     panStartRef.current = null;
   };
+
+  const totalAmount = data.totalAmount || 0;
+  const paidAmount = data.paidAmount || 0;
+  const remainingAmount = Math.max(totalAmount - paidAmount, 0);
+  const paymentPercentage = totalAmount > 0 ? Math.min(100, Math.round((paidAmount / totalAmount) * 100)) : 0;
 
   React.useEffect(() => {
     if (!zoomImage) return;
@@ -227,6 +235,87 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
   };
   return (
     <>
+      {/* Payment Tracking Modal */}
+      <Modal
+        isOpen={paymentTrackingOpen}
+        onClose={() => setPaymentTrackingOpen(false)}
+        title="Payment Tracking"
+        className='max-w-4xl!'
+        description="Track payment progress and view all recorded payments for this order."
+      >
+        <div className="space-y-6">
+          {/* Summary */}
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <h3 className="font-semibold mb-2">Payment Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+              <div>
+                <p className="text-muted-foreground">Payment Status</p>
+                <p className="font-medium">{data.paymentStatus}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Total Amount</p>
+                <p className="font-medium">₱{totalAmount.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Paid Amount</p>
+                <p className="font-medium">₱{paidAmount.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Remaining Balance</p>
+                <p className="font-medium">₱{remainingAmount.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-medium">{paymentPercentage}%</span>
+              </div>
+              <Progress value={paymentPercentage} />
+            </div>
+          </div>
+
+          {/* Payment History */}
+          <div>
+            <h3 className="font-semibold mb-2">Payment History</h3>
+            {data.payments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
+            ) : (
+              <div className="max-h-72 overflow-y-auto border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted text-xs text-muted-foreground">
+                    <tr>
+                      <th className="py-2 px-3 text-left font-medium">Date</th>
+                      <th className="py-2 px-3 text-right font-medium">Amount</th>
+                      <th className="py-2 px-3 text-left font-medium">Note</th>
+                      <th className="py-2 px-3 text-center font-medium">Attachments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.payments.map((payment) => (
+                      <tr key={payment.id} className="border-t last:border-0">
+                        <td className="py-2 px-3">
+                          {new Date(payment.createdAt).toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          ₱{payment.amount.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3">
+                          {payment.note || "—"}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          {payment.attachments?.length ?? 0}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Verify Payment Modal */}
       <Modal
         isOpen={verifyModalOpen}
         onClose={() => setVerifyModalOpen(false)}
@@ -406,10 +495,16 @@ const CellAction = ({ data }: { data: OrderWithOrderItems }) => {
             <EditIcon className="size-4" />
             View Details
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => openVerifyModal(data.payments[0])}>
-            <Wallet className="size-4" />
-            Verify Payment
+          <DropdownMenuItem onClick={() => setPaymentTrackingOpen(true)}>
+            <BarChart3 className="size-4" />
+            Payment Tracking
           </DropdownMenuItem>
+          {data.payments.length > 0 && (
+            <DropdownMenuItem onClick={() => openVerifyModal(data.payments[0])}>
+              <Wallet className="size-4" />
+              Verify Payment
+            </DropdownMenuItem>
+          )}
           {data.status === "Pending" || data.status === "Cancelled" ? (
             <DropdownMenuItem onClick={() => setScheduleOpen(true)}>
               <Calendar className="size-4" />

@@ -3,6 +3,14 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import CellAction from "./cell-action";
 import { UserWithProps } from '@/types/interface';
 
@@ -90,8 +98,63 @@ export const columns: ColumnDef<UserWithProps>[] = [
       );
     },
     cell: ({ row }) => {
-      const orders = row.original.orders.length;
-      return <span className="ml-2.5">{orders} {orders <= 1 ? "item" : "items"}</span>;
+      const orders = row.original.orders;
+      const count = orders.length;
+
+      if (!count) {
+        return <span className="ml-2.5 text-muted-foreground">No orders</span>;
+      }
+
+      return (
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="ml-2.5 text-primary underline-offset-4 hover:underline text-sm font-medium">
+              {count} {count === 1 ? "order" : "orders"}
+            </button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-5xl">
+            <DialogHeader>
+              <DialogTitle>Orders for {row.original.name}</DialogTitle>
+              <DialogDescription>
+                {count} {count === 1 ? "order" : "orders"} placed by this customer.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-4 max-h-80 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-xs text-muted-foreground">
+                    <th className="py-2 pr-2 text-left font-medium">Order ID</th>
+                    <th className="py-2 pr-2 text-left font-medium">Status</th>
+                    <th className="py-2 pr-2 text-left font-medium">Payment</th>
+                    <th className="py-2 pr-2 text-right font-medium">Total</th>
+                    <th className="py-2 pr-2 text-right font-medium">Paid</th>
+                    <th className="py-2 pr-2 text-left font-medium">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="border-b last:border-0">
+                      <td className="py-1.5 pr-2 font-mono text-xs">{order.orderId}</td>
+                      <td className="py-1.5 pr-2">{order.status}</td>
+                      <td className="py-1.5 pr-2">{order.paymentStatus}</td>
+                      <td className="py-1.5 pr-2 text-right">
+                        ₱{order.totalAmount.toLocaleString()}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right">
+                        ₱{order.paidAmount.toLocaleString()}
+                      </td>
+                      <td className="py-1.5 pr-2">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DialogContent>
+        </Dialog>
+      );
     },
   },
   {

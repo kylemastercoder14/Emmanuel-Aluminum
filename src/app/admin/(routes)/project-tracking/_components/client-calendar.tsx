@@ -11,8 +11,16 @@ import {
   ViewDirective,
   ViewsDirective,
   Week,
+  EventRenderedArgs,
 } from "@syncfusion/ej2-react-schedule";
-import { Task } from "@prisma/client";
+import { Orders, Task, User } from "@prisma/client";
+type TaskWithRelations = Task & { customer: User | null; order: Orders | null };
+
+const statusColorMap: Record<string, string> = {
+  "Not Started": "#eab308", // yellow-500
+  "In Progress": "#3b82f6", // blue-500
+  Completed: "#22c55e", // green-500
+};
 
 const ClientCalendar = ({
   tasks,
@@ -20,9 +28,9 @@ const ClientCalendar = ({
   onTaskClick,
   onDateClick,
 }: {
-  tasks: Task[];
+  tasks: TaskWithRelations[];
   currentRole: string;
-  onTaskClick: (task: Task) => void;
+  onTaskClick: (task: TaskWithRelations) => void;
   onDateClick: (date: Date) => void;
 }) => {
   const isAdmin = currentRole === "Admin";
@@ -32,14 +40,27 @@ const ClientCalendar = ({
   const events = tasks.map((task) => ({
     Id: task.id,
     Subject: task.subject,
-    StartTime: task.startDate,
-    EndTime: task.endDate,
+    StartTime: new Date(task.startDate),
+    EndTime: new Date(task.endDate),
     Status: task.status,
     Priority: task.priority,
     rawTask: task,
+    CategoryColor: statusColorMap[task.status] ?? "#6b7280", // fallback gray-500
   }));
 
   const today = React.useMemo(() => new Date(), []);
+
+  const onEventRendered = (args: EventRenderedArgs): void => {
+    const status = (args.data as any).Status as string | undefined;
+    const color = status ? statusColorMap[status] : undefined;
+
+    if (color && args.element) {
+      const el = args.element as HTMLElement;
+      el.style.backgroundColor = color;
+      el.style.borderColor = color;
+      el.style.color = "#ffffff"; // ensure text is readable
+    }
+  };
 
   return (
     <div className="flex items-center justify-center">
@@ -51,6 +72,7 @@ const ClientCalendar = ({
           allowEditing: isAdmin || isStaff, // admin & staff can edit
           allowDeleting: isAdmin, // only admin can delete
         }}
+        eventRendered={onEventRendered}
         showQuickInfo={false}
         selectedDate={today}
         currentView="Month"

@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import TaskForm from "@/components/forms/task";
 import { Modal } from "@/components/globals/modal";
+import { Orders, User } from "@prisma/client";
 
-const CreateTaskModal = () => {
+type ScheduledOrder = Orders & { user: User };
+type Customer = User;
+
+const CreateTaskModal = ({
+  scheduledOrders,
+  customers,
+}: {
+  scheduledOrders: ScheduledOrder[];
+  customers: Customer[];
+}) => {
   const [formModalOpen, setFormModalOpen] = React.useState(false);
   return (
     <>
@@ -15,6 +25,7 @@ const CreateTaskModal = () => {
         onClose={() => {
           setFormModalOpen(false);
         }}
+        className='max-w-5xl!'
         title={"Create Task"}
       >
         <TaskForm
@@ -22,6 +33,8 @@ const CreateTaskModal = () => {
           onClose={() => {
             setFormModalOpen(false);
           }}
+          scheduledOrders={scheduledOrders}
+          customers={customers}
         />
       </Modal>
       <Button variant="primary" onClick={() => setFormModalOpen(true)}>
