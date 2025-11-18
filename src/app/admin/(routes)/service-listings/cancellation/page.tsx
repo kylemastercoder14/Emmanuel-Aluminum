@@ -10,7 +10,7 @@ const Page = async () => {
       status: "Cancelled",
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
     include: {
       user: {

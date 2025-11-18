@@ -7,7 +7,7 @@ import { columns } from "./_components/columns";
 const Page = async () => {
   const data = await db.orders.findMany({
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
     include: {
       user: {

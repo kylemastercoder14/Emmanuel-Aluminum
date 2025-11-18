@@ -10,7 +10,7 @@ const Page = async () => {
       status: "Scheduled",
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
     include: {
       user: {
