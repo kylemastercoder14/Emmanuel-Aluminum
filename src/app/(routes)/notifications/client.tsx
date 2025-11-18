@@ -38,8 +38,17 @@ const NotificationPage = ({
     );
   }
 
+  // ----------------------------------------
+  // 🔥 Sort notifications newest → oldest
+  // ----------------------------------------
+  const sortedNotifications = [...notifications].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  // ----------------------------------------
   // Group notifications by date
-  const grouped = notifications.reduce(
+  // ----------------------------------------
+  const grouped = sortedNotifications.reduce(
     (acc, notif) => {
       const dateKey = format(new Date(notif.createdAt), "yyyy-MM-dd");
       if (!acc[dateKey]) acc[dateKey] = [];
@@ -49,6 +58,7 @@ const NotificationPage = ({
     {} as Record<string, Notifications[]>
   );
 
+  // Sort date groups newest → oldest
   const sortedDates = Object.keys(grouped).sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
@@ -72,6 +82,7 @@ const NotificationPage = ({
               <h2 className="text-base sm:text-lg font-semibold mb-3">
                 {isToday ? "Today" : format(new Date(dateKey), "MMMM d")}
               </h2>
+
               <div className="space-y-3">
                 {items.map((item) => (
                   <div
@@ -83,9 +94,11 @@ const NotificationPage = ({
                     <p className="font-medium text-sm sm:text-base">
                       {item.title}
                     </p>
+
                     <p className="text-xs sm:text-sm text-gray-700 mt-1">
                       {item.message}
                     </p>
+
                     <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       {formatDistanceToNow(new Date(item.createdAt), {
                         addSuffix: true,
@@ -94,6 +107,7 @@ const NotificationPage = ({
                   </div>
                 ))}
               </div>
+
               <Separator className="mt-4" />
             </div>
           );
