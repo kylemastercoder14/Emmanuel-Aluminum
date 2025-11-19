@@ -245,7 +245,7 @@ const Page = async () => {
 
   return (
     <div>
-      <div className="grid lg:grid-cols-4 grid-cols-1 gap-5">
+      <div className="grid lg:grid-cols-3 grid-cols-1 gap-5">
         <StatCard
           title="Total Revenue"
           data={`₱${totalRevenueThisMonth.toLocaleString(undefined, {
@@ -255,15 +255,6 @@ const Page = async () => {
           trend={revenueTrend}
           recommendation={getRecommendation("revenue", revenueChange) ?? ""}
           description={getDescription("revenue", revenueChange) ?? ""}
-        />
-
-        <StatCard
-          title="Products Stock"
-          data={thisMonthProducts.toString()}
-          percentage={`${stockChange.toFixed(1)}%`}
-          trend={stockTrend}
-          recommendation={getRecommendation("products", stockChange) ?? ""}
-          description={getDescription("products", stockChange) ?? ""}
         />
 
         <StatCard
