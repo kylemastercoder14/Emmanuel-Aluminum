@@ -8,12 +8,14 @@ import {
   loginSchema,
   registerSchema,
   updateProfileSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "@/validators/auth";
 import db from "@/lib/db";
 import bcryptjs from "bcryptjs";
 import * as jose from "jose";
 import { cookies } from "next/headers";
-import { sendAccountToEmail } from "@/hooks/use-email-template";
+import { sendAccountToEmail, sendPasswordResetEmail } from "@/hooks/use-email-template";
 import { getUserIdFromToken } from "@/lib/auth";
 
 export const signUp = async (values: z.infer<typeof registerSchema>) => {
@@ -306,6 +308,98 @@ export const changePassword = async (
     console.error("Error changing password", error);
     return {
       error: `Failed to change password. Please try again. ${error.message || ""}`,
+    };
+  }
+};
+
+export const requestPasswordReset = async (
+  values: z.infer<typeof forgotPasswordSchema>
+) => {
+  const validatedField = forgotPasswordSchema.safeParse(values);
+
+  if (!validatedField.success) {
+    const errors = validatedField.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const { email } = validatedField.data;
+
+  try {
+    const user = await db.user.findFirst({
+      where: { email },
+    });
+
+    // For security, don't reveal whether the email exists
+    if (!user) {
+      return {
+        success:
+          "If an account with that email exists, a verification code has been sent.",
+      };
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000);
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: otpCode.toString(),
+      },
+    });
+
+    await sendPasswordResetEmail(email, user.name, otpCode);
+
+    return {
+      success:
+        "If an account with that email exists, a verification code has been sent.",
+    };
+  } catch (error: any) {
+    console.error("Error requesting password reset", error);
+    return {
+      error: `Failed to request password reset. Please try again. ${error.message || ""}`,
+    };
+  }
+};
+
+export const resetPassword = async (
+  values: z.infer<typeof resetPasswordSchema>,
+  email: string
+) => {
+  const validatedField = resetPasswordSchema.safeParse(values);
+
+  if (!validatedField.success) {
+    const errors = validatedField.error.issues.map((err) => err.message);
+    return { error: `Validation Error: ${errors.join(", ")}` };
+  }
+
+  const { otpCode, newPassword } = validatedField.data;
+
+  try {
+    const user = await db.user.findFirst({
+      where: {
+        email,
+        otpCode,
+      },
+    });
+
+    if (!user) {
+      return { error: "Invalid verification code." };
+    }
+
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        otpCode: null,
+      },
+    });
+
+    return { success: "Password has been reset successfully." };
+  } catch (error: any) {
+    console.error("Error resetting password", error);
+    return {
+      error: `Failed to reset password. Please try again. ${error.message || ""}`,
     };
   }
 };

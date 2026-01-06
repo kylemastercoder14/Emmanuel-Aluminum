@@ -89,6 +89,11 @@ const Page = () => {
               Sign up
             </Link>
           </div>
+          <div className="flex mt-3 items-center justify-center text-sm md:text-base">
+            <Link href="/forgot-password" className="font-medium text-navbar">
+              Forgot password?
+            </Link>
+          </div>
         </div>
       </div>
     </div>

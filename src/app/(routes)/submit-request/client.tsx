@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UserWithProps } from "@/types/interface";
 import { toast } from "sonner";
-import { addOrUpdateAddress } from "@/actions/user";
+import { addOrUpdateAddress, saveSeniorPwdId } from "@/actions/user";
 import { submitOrder } from "@/actions/order";
 import MultipleImageUpload from "@/components/globals/multiple-image-upload";
 
@@ -30,8 +30,13 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
   const [address, setAddress] = useState(user?.address?.[0]?.address ?? "");
 
   // Senior/PWD discount states
-  const [isSeniorOrPwd, setIsSeniorOrPwd] = useState(false);
-  const [seniorPwdId, setSeniorPwdId] = useState<string[]>([]);
+  const hasSavedSeniorPwdId = (user?.seniorPwdId ?? []).length > 0;
+  const [isSeniorOrPwd, setIsSeniorOrPwd] = useState(
+    user?.isSeniorOrPwd ?? hasSavedSeniorPwdId
+  );
+  const [seniorPwdId, setSeniorPwdId] = useState<string[]>(
+    user?.seniorPwdId ?? []
+  );
   const [seniorPwdIdPreview, setSeniorPwdIdPreview] = useState<string>("");
 
   const { selectedForCheckout, removeAll } = useCart();
@@ -86,6 +91,16 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
   };
 
   const handleCheckout = async () => {
+    const today = new Date();
+    const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+
+    if (day === 0 || day === 6) {
+      toast.error(
+        "Service requests are not allowed on Saturdays and Sundays. Please come back on a weekday."
+      );
+      return;
+    }
+
     if (selectedForCheckout.length === 0) {
       toast.error("Please add items to your cart before checking out.");
       return;
@@ -99,6 +114,16 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
     setIsSubmitting(true);
     try {
       const totalDiscount = tieredDiscount.amount + seniorPwdDiscount;
+
+      // If this is the first time uploading a Senior/PWD ID, save it to the account
+      if (isSeniorOrPwd && !hasSavedSeniorPwdId && seniorPwdId.length > 0) {
+        const saveResult = await saveSeniorPwdId(user?.id as string, seniorPwdId);
+        if (saveResult.error) {
+          toast.error(saveResult.error);
+          setIsSubmitting(false);
+          return;
+        }
+      }
 
       const response = await submitOrder(
         user?.id as string,
@@ -236,7 +261,7 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
               checked={isSeniorOrPwd}
               onCheckedChange={(checked) => {
                 setIsSeniorOrPwd(checked as boolean);
-                if (!checked) {
+                if (!checked && !hasSavedSeniorPwdId) {
                   setSeniorPwdId([]);
                   setSeniorPwdIdPreview("");
                 }
@@ -260,32 +285,54 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
               <Label>
                 Senior Citizen / PWD ID <span className="text-red-600">*</span>
               </Label>
-              <MultipleImageUpload
-                onUploadComplete={(urls) => setSeniorPwdId(urls)}
-                defaultValues={seniorPwdId
-                  ?.map((file: File | string) => {
-                    if (typeof file === "string") return file;
-                    if (file instanceof File) return URL.createObjectURL(file);
-                    return "";
-                  })
-                  .filter(Boolean)}
-                maxImages={2}
-              />
-              <p className="text-xs text-gray-500">
-                Accepted formats: JPG, PNG, WEBP, PDF (Max 5MB)
-              </p>
 
-              {seniorPwdIdPreview && (
-                <div className="mt-3">
-                  <p className="text-sm font-medium mb-2">Preview:</p>
-                  <Image
-                    src={seniorPwdIdPreview}
-                    alt="Senior/PWD ID Preview"
-                    width={200}
-                    height={150}
-                    className="rounded border object-cover"
-                  />
+              {hasSavedSeniorPwdId ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-700">
+                    Your Senior/PWD ID is already saved on your account and
+                    cannot be changed. It will be used automatically for this
+                    and future requests.
+                  </p>
+                  {user?.seniorPwdId?.[0] && (
+                    <Image
+                      src={user.seniorPwdId[0]}
+                      alt="Senior/PWD ID"
+                      width={200}
+                      height={150}
+                      className="rounded border object-cover"
+                    />
+                  )}
                 </div>
+              ) : (
+                <>
+                  <MultipleImageUpload
+                    onUploadComplete={(urls) => setSeniorPwdId(urls)}
+                    defaultValues={seniorPwdId
+                      ?.map((file: File | string) => {
+                        if (typeof file === "string") return file;
+                        if (file instanceof File) return URL.createObjectURL(file);
+                        return "";
+                      })
+                      .filter(Boolean)}
+                    maxImages={2}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPG, PNG, WEBP (Max 5MB)
+                  </p>
+
+                  {seniorPwdIdPreview && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium mb-2">Preview:</p>
+                      <Image
+                        src={seniorPwdIdPreview}
+                        alt="Senior/PWD ID Preview"
+                        width={200}
+                        height={150}
+                        className="rounded border object-cover"
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -396,7 +443,7 @@ const CheckoutPage = ({ user }: { user: UserWithProps | null }) => {
               disabled={
                 isSubmitting ||
                 !user?.address?.length ||
-                (isSeniorOrPwd && !seniorPwdId)
+                (isSeniorOrPwd && !hasSavedSeniorPwdId && !seniorPwdId.length)
               }
               className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
             >

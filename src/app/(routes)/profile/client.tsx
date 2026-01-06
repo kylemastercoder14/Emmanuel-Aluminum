@@ -22,12 +22,16 @@ import { Button } from "@/components/ui/button";
 import { changePassword, updateProfile } from "@/actions/auth";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import MultipleImageUpload from "@/components/globals/multiple-image-upload";
+import { saveSeniorPwdId } from "@/actions/user";
+import { useRouter } from "next/navigation";
 
 type ProfileClientProps = {
   user: UserWithProps;
 };
 
 const ProfileClient: React.FC<ProfileClientProps> = ({ user }) => {
+  const router = useRouter();
   const profileForm = useForm<z.infer<typeof updateProfileSchema>>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
@@ -58,6 +62,12 @@ const ProfileClient: React.FC<ProfileClientProps> = ({ user }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
+  const hasSavedSeniorPwdId = (user.seniorPwdId ?? []).length > 0;
+  const [seniorPwdId, setSeniorPwdId] = useState<string[]>(
+    user.seniorPwdId ?? []
+  );
+  const [isSavingSeniorPwd, setIsSavingSeniorPwd] = useState(false);
+
   const onSubmitProfile = async (values: z.infer<typeof updateProfileSchema>) => {
     try {
       const res = await updateProfile(values);
@@ -70,6 +80,37 @@ const ProfileClient: React.FC<ProfileClientProps> = ({ user }) => {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong while updating your profile.");
+    }
+  };
+
+  const handleSaveSeniorPwdId = async () => {
+    if (hasSavedSeniorPwdId) {
+      toast.error(
+        "Your Senior/PWD ID is already saved and cannot be changed."
+      );
+      return;
+    }
+
+    if (!seniorPwdId.length) {
+      toast.error("Please upload your Senior/PWD ID first.");
+      return;
+    }
+
+    try {
+      setIsSavingSeniorPwd(true);
+      const res = await saveSeniorPwdId(user.id, seniorPwdId);
+
+      if (res.success) {
+        toast.success("Senior/PWD ID saved successfully.");
+        router.refresh();
+      } else if (res.error) {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while saving your Senior/PWD ID.");
+    } finally {
+      setIsSavingSeniorPwd(false);
     }
   };
 
@@ -169,6 +210,56 @@ const ProfileClient: React.FC<ProfileClientProps> = ({ user }) => {
             </div>
           </form>
         </Form>
+      </div>
+
+      {/* Senior / PWD ID (one-time upload) */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-lg font-medium mb-2">Senior / PWD ID</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Upload your Senior Citizen or PWD ID once. After it is saved, it
+          cannot be changed and will be used automatically for eligible
+          discounts.
+        </p>
+
+        {hasSavedSeniorPwdId ? (
+          <div className="space-y-3">
+            <p className="text-sm text-green-700 font-medium">
+              Your Senior/PWD ID is already saved.
+            </p>
+            {user.seniorPwdId?.[0] && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.seniorPwdId[0]}
+                alt="Senior/PWD ID"
+                className="max-w-xs rounded border object-cover"
+              />
+            )}
+            <p className="text-xs text-gray-500">
+              If you need to update this information, please contact support.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <MultipleImageUpload
+              onUploadComplete={(urls) => setSeniorPwdId(urls)}
+              defaultValues={seniorPwdId}
+              maxImages={2}
+            />
+            <p className="text-xs text-gray-500">
+              Accepted formats: JPG, PNG, WEBP (Max 5MB)
+            </p>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={handleSaveSeniorPwdId}
+                disabled={isSavingSeniorPwd || !seniorPwdId.length}
+                className="bg-navbar hover:opacity-90"
+              >
+                Save ID
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Change password */}

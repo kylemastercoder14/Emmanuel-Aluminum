@@ -132,6 +132,40 @@ export const updateCustomerStatus = async (id: string, isActive: boolean) => {
   }
 };
 
+export const saveSeniorPwdId = async (userId: string, seniorPwdId: string[]) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return { error: "User not found." };
+    }
+
+    // Enforce one-time upload: if already set, do not allow changes
+    if (user.seniorPwdId && user.seniorPwdId.length > 0) {
+      return {
+        error: "Senior/PWD ID has already been uploaded and cannot be changed.",
+      };
+    }
+
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        isSeniorOrPwd: true,
+        seniorPwdId,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      error: "Failed to save Senior/PWD ID. Please try again.",
+    };
+  }
+};
+
 export const addOrUpdateAddress = async (
   userId: string,
   address: {

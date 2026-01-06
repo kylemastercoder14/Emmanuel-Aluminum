@@ -38,6 +38,41 @@ export const sendAccountToEmail = async (
   }
 };
 
+export const sendPasswordResetEmail = async (
+  email: string,
+  name: string,
+  otpCode: number
+) => {
+  const htmlContent = await OTPVerificationEmailHTML({
+    otpCode,
+  });
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "aluminumfabricationemmanuel@gmail.com",
+      pass: "hkzmfkrdxbuytzum",
+    },
+  });
+
+  const message = {
+    from: "aluminumfabricationemmanuel@gmail.com",
+    to: email,
+    subject: "Password reset verification code",
+    text: `Hello ${name}, use the following verification code to reset your password: ${otpCode}. If you did not request this, you can ignore this message.`,
+    html: htmlContent,
+  };
+
+  try {
+    await transporter.sendMail(message);
+
+    return { success: "Password reset email has been sent." };
+  } catch (error) {
+    console.error("Error sending password reset email", error);
+    return { message: "An error occurred. Please try again." };
+  }
+};
+
 export const sendQuotationToEmail = async (
   email: string,
   firstName: string,

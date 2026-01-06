@@ -17,6 +17,16 @@ export const submitOrder = async (
   totalDiscount: number = 0
 ) => {
   try {
+    const today = new Date();
+    const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+
+    if (day === 0 || day === 6) {
+      return {
+        error:
+          "Service requests are not allowed on Saturdays and Sundays. Please come back on a weekday.",
+      };
+    }
+
     const order = await db.orders.create({
       data: {
         orderId: uuidv4(),
