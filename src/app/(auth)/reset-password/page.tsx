@@ -2,13 +2,13 @@ import React from "react";
 import ResetPasswordForm from "@/components/forms/reset-password";
 
 type PageProps = {
-  searchParams: {
+  searchParams: Promise<{
     email?: string;
-  };
+  }>;
 };
 
-const Page = ({ searchParams }: PageProps) => {
-  const emailParam = searchParams.email;
+const Page = async ({ searchParams }: PageProps) => {
+  const { email: emailParam } = await searchParams;
 
   if (!emailParam) {
     return (
