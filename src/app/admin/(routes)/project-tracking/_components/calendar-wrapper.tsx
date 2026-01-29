@@ -10,6 +10,12 @@ import { deleteTask } from "@/actions/task";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import ClientCalendar from "./client-calendar";
+
+/** Saturday = 6, Sunday = 0 */
+const isWeekend = (date: Date) => {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+};
 import { registerLicense } from "@syncfusion/ej2-base";
 
 registerLicense(process.env.NEXT_PUBLIC_SYNCFUSION_LICENSE_KEY!);
@@ -123,10 +129,15 @@ const CalendarWrapper = ({
         }}
         onDateClick={(date) => {
           // Only Admin can create
-          if (isAdmin) {
-            setSelectedDate(date);
-            setFormModalOpen(true);
+          if (!isAdmin) return;
+          if (isWeekend(date)) {
+            toast.error(
+              "Adding new tasks is not allowed on Saturdays and Sundays."
+            );
+            return;
           }
+          setSelectedDate(date);
+          setFormModalOpen(true);
         }}
       />
     </>

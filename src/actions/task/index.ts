@@ -22,11 +22,24 @@ export const deleteTask = async (id: string) => {
   }
 };
 
+/** Saturday = 6, Sunday = 0. Uses Asia/Manila to match calendar. */
+function isWeekend(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
 export const createTask = async (
   data: z.infer<typeof taskSchema>,
   selectedDate?: string | null
 ) => {
   try {
+    const now = new Date();
+    if (isWeekend(now)) {
+      return {
+        error:
+          "Adding new tasks is not allowed on Saturdays and Sundays.",
+      };
+    }
     const validatedFields = taskSchema.parse(data);
 
     const task = await db.task.create({
